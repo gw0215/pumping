@@ -24,4 +24,14 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    @Transactional
+    public void delete(String password, Member member) {
+
+        if (!bCryptPasswordEncoder.matches(password, member.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+        memberRepository.delete(member);
+
+    }
+
 }

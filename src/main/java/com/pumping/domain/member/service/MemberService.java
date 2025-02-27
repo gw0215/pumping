@@ -17,11 +17,12 @@ public class MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
-    public void save(MemberSignUpRequest memberSignUpRequest) {
+    public Long save(MemberSignUpRequest memberSignUpRequest) {
 
         String encodePassword = bCryptPasswordEncoder.encode(memberSignUpRequest.getPassword());
         Member member = new Member(memberSignUpRequest.getNickname(), memberSignUpRequest.getEmail(), encodePassword, memberSignUpRequest.getProfileImage());
-        memberRepository.save(member);
+        Member saveMember = memberRepository.save(member);
+        return saveMember.getId();
     }
 
     @Transactional

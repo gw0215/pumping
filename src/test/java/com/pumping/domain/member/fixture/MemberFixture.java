@@ -1,5 +1,6 @@
 package com.pumping.domain.member.fixture;
 
+import com.pumping.domain.member.dto.DeleteMemberRequest;
 import com.pumping.domain.member.dto.MemberSignUpRequest;
 import com.pumping.domain.member.model.Member;
 
@@ -16,6 +17,10 @@ public abstract class MemberFixture {
 
     public static MemberSignUpRequest createMemberSignUpRequest() {
         return new MemberSignUpRequest(PASSWORD, EMAIL, NICKNAME, PROFILE_IMAGE);
+    }
+
+    public static DeleteMemberRequest createDeleteMemberRequest() {
+        return new DeleteMemberRequest(PASSWORD);
     }
 
 }

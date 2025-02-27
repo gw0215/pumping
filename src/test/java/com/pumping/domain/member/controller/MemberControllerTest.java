@@ -1,20 +1,25 @@
 package com.pumping.domain.member.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pumping.domain.member.dto.DeleteMemberRequest;
 import com.pumping.domain.member.dto.MemberSignUpRequest;
 import com.pumping.domain.member.fixture.MemberFixture;
+import com.pumping.domain.member.service.MemberService;
+import com.pumping.global.auth.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest
@@ -27,6 +32,12 @@ class MemberControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    MemberService memberService;
 
     @Test
     @Transactional
@@ -43,4 +54,22 @@ class MemberControllerTest {
                 .andDo(MockMvcResultHandlers.print());
     }
 
+    @Test
+    @Transactional
+    void 사용자_삭제_API_성공() throws Exception {
+
+        MemberSignUpRequest memberSignUpRequest = MemberFixture.createMemberSignUpRequest();
+        Long id = memberService.save(memberSignUpRequest);
+        String token = jwtTokenProvider.createToken(id);
+
+        DeleteMemberRequest deleteMemberRequest = MemberFixture.createDeleteMemberRequest();
+        String json = objectMapper.writeValueAsString(deleteMemberRequest);
+
+        mockMvc.perform(delete("/members")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isNoContent())
+                .andDo(MockMvcResultHandlers.print());
+    }
 }

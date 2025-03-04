@@ -7,11 +7,9 @@ import jakarta.persistence.Id;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
 @Entity
+@Getter
 @NoArgsConstructor
 @EqualsAndHashCode
 public class Member {

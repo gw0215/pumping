@@ -1,6 +1,7 @@
 package com.pumping.domain.member.controller;
 
 import com.pumping.domain.member.dto.DeleteMemberRequest;
+import com.pumping.domain.member.dto.EmailCodeCheckRequest;
 import com.pumping.domain.member.dto.MemberSignUpRequest;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.service.MemberService;
@@ -32,6 +33,24 @@ public class MemberController {
                     @AuthenticationPrincipal Member member
             ) {
         memberService.delete(deleteMemberRequest.getPassword(), member);
+    }
+
+    @GetMapping(value = "/members/email")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void sendEmail
+            (
+                    @RequestParam("email") String email
+            ) {
+        memberService.sendCodeEmail(email);
+    }
+
+    @PostMapping(value = "/members/email")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void checkEmailCode
+            (
+                    @RequestBody EmailCodeCheckRequest emailCodeCheckRequest
+            ) {
+        memberService.checkCode(emailCodeCheckRequest);
     }
 
 }

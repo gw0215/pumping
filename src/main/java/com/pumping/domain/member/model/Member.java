@@ -1,12 +1,13 @@
 package com.pumping.domain.member.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.pumping.domain.routine.model.Routine;
+import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -26,6 +27,9 @@ public class Member {
 
     private String profileImage;
 
+    @OneToMany(mappedBy = "member")
+    private List<Routine> routines = new ArrayList<>();
+
     public Member(String nickname, String email, String password, String profileImage) {
         this.nickname = nickname;
         this.email = email;
@@ -33,5 +37,5 @@ public class Member {
         this.profileImage = profileImage;
     }
 
-
+    
 }

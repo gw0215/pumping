@@ -30,5 +30,5 @@ public class Routine {
         this.member = member;
         this.name = name;
     }
-    
+
 }

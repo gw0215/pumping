@@ -9,7 +9,12 @@ import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
 import com.pumping.domain.routine.dto.RoutineExerciseRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequests;
+import com.pumping.domain.routine.fixture.RoutineFixture;
+import com.pumping.domain.routine.model.Routine;
+import com.pumping.domain.routine.repository.RoutineRepository;
 import com.pumping.domain.routineexercise.fixture.RoutineExerciseFixture;
+import com.pumping.domain.routineexercise.model.RoutineExercise;
+import com.pumping.domain.routineexercise.repository.RoutineExerciseRepository;
 import com.pumping.global.auth.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -29,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest
@@ -52,6 +58,12 @@ class RoutineControllerTest {
     @Autowired
     MemberRepository memberRepository;
 
+    @Autowired
+    RoutineRepository routineRepository;
+
+    @Autowired
+    RoutineExerciseRepository routineExerciseRepository;
+
     @MockitoBean
     JavaMailSender javaMailSender;
 
@@ -74,7 +86,7 @@ class RoutineControllerTest {
 
         Exercise exercise = ExerciseFixture.createExercise();
         exerciseRepository.save(exercise);
-        
+
         List<RoutineExerciseRequest> routineExerciseRequestList = RoutineExerciseFixture.createRoutineExerciseRequests(5);
         RoutineExerciseRequests routineExerciseRequests = RoutineExerciseFixture.createRoutineExerciseRequests(routineExerciseRequestList);
 
@@ -86,6 +98,29 @@ class RoutineControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    @Transactional
+    void 사용자의_모든_루틴_조회_API_성공() throws Exception {
+
+        Exercise exercise = ExerciseFixture.createExercise();
+        Routine routine = RoutineFixture.createRoutine(member);
+
+        RoutineExercise routineExercise = RoutineExerciseFixture.createRoutineExercise(routine, exercise);
+
+        exercise.getRoutineExercise().add(routineExercise);
+        routine.getRoutineExercises().add(routineExercise);
+        routineRepository.save(routine);
+        exerciseRepository.save(exercise);
+
+        mockMvc.perform(get("/routines")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
 
     }

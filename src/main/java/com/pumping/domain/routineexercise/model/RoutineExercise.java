@@ -25,14 +25,11 @@ public class RoutineExercise {
 
     private Integer count;
 
-    private Integer setCount;
-
-    public RoutineExercise(Routine routine, Exercise exercise, Integer weight, Integer count, Integer setCount) {
+    public RoutineExercise(Routine routine, Exercise exercise, Integer weight, Integer count) {
         this.routine = routine;
         this.exercise = exercise;
         this.weight = weight;
         this.count = count;
-        this.setCount = setCount;
     }
 
 

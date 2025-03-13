@@ -87,7 +87,7 @@ class RoutineControllerTest {
         Exercise exercise = ExerciseFixture.createExercise();
         exerciseRepository.save(exercise);
 
-        List<RoutineExerciseRequest> routineExerciseRequestList = RoutineExerciseFixture.createRoutineExerciseRequests(5);
+        List<RoutineExerciseRequest> routineExerciseRequestList = RoutineExerciseFixture.createRoutineExerciseRequests(exercise.getId(), 5);
         RoutineExerciseRequests routineExerciseRequests = RoutineExerciseFixture.createRoutineExerciseRequests(routineExerciseRequestList);
 
         String json = objectMapper.writeValueAsString(routineExerciseRequests);
@@ -124,5 +124,28 @@ class RoutineControllerTest {
                 .andDo(MockMvcResultHandlers.print());
 
     }
+
+    @Test
+    @Transactional
+    void 루틴_상세_조회_API_성공() throws Exception {
+
+        Exercise exercise = ExerciseFixture.createExercise();
+        Routine routine = RoutineFixture.createRoutine(member);
+
+        RoutineExercise routineExercise = RoutineExerciseFixture.createRoutineExercise(routine, exercise);
+
+        exercise.getRoutineExercise().add(routineExercise);
+        routine.getRoutineExercises().add(routineExercise);
+        routineRepository.save(routine);
+        exerciseRepository.save(exercise);
+
+        mockMvc.perform(get("/routines/{id}", routine.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
 
 }

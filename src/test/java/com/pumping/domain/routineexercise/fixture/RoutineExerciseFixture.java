@@ -13,16 +13,16 @@ import java.util.stream.IntStream;
 public abstract class RoutineExerciseFixture {
 
     public static RoutineExercise createRoutineExercise(Routine routine, Exercise exercise) {
-        return new RoutineExercise(routine, exercise, 10, 5);
+        return new RoutineExercise(routine, exercise, 10, 5, 1, 1);
     }
 
-    public static RoutineExerciseRequest createRoutineExerciseRequest() {
-        return new RoutineExerciseRequest(1L, 20, 10, 5);
+    public static RoutineExerciseRequest createRoutineExerciseRequest(Long exerciseId) {
+        return new RoutineExerciseRequest(exerciseId, 20, 10, 5, 1);
     }
 
-    public static List<RoutineExerciseRequest> createRoutineExerciseRequests(int count) {
+    public static List<RoutineExerciseRequest> createRoutineExerciseRequests(Long exerciseId, int count) {
         return IntStream.range(0, count)
-                .mapToObj(i -> createRoutineExerciseRequest())
+                .mapToObj(i -> createRoutineExerciseRequest(exerciseId))
                 .collect(Collectors.toList());
     }
 

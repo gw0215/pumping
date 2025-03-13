@@ -1,17 +1,16 @@
 package com.pumping.domain.routine.controller;
 
 import com.pumping.domain.member.model.Member;
+import com.pumping.domain.routine.dto.RoutineDetailResponse;
 import com.pumping.domain.routine.dto.RoutineExerciseRequests;
 import com.pumping.domain.routine.dto.RoutineResponse;
 import com.pumping.domain.routine.service.RoutineService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,11 +29,18 @@ public class RoutineController {
 
     @GetMapping("/routines")
     @ResponseStatus(HttpStatus.OK)
-    public Page<RoutineResponse> findAllRoutines(
-            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+    public List<RoutineResponse> findAllRoutines(
             @AuthenticationPrincipal Member member
     ) {
-        return routineService.findAll(member.getId(), pageable);
+        return routineService.findAll(member.getId());
+    }
+
+    @GetMapping("/routines/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public RoutineDetailResponse findById(
+            @PathVariable("id") Long id
+    ) {
+        return routineService.findById(id);
     }
 
 

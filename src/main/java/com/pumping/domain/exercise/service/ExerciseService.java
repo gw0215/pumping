@@ -24,7 +24,7 @@ public class ExerciseService {
         List<ExerciseResponse> exerciseResponses = new ArrayList<>();
 
         for (Exercise exercise : exercises) {
-            ExerciseResponse exerciseResponse = new ExerciseResponse(exercise.getName(), exercise.getExplain(), exercise.getPart());
+            ExerciseResponse exerciseResponse = new ExerciseResponse(exercise.getId(), exercise.getName(), exercise.getExplain(), exercise.getPart());
             exerciseResponses.add(exerciseResponse);
         }
 

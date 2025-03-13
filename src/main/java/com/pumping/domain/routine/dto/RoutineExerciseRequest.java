@@ -15,10 +15,13 @@ public class RoutineExerciseRequest {
 
     private Integer setCount;
 
-    public RoutineExerciseRequest(Long exerciseId, Integer weight, Integer count, Integer setCount) {
+    private Integer order;
+
+    public RoutineExerciseRequest(Long exerciseId, Integer weight, Integer count, Integer setCount, Integer order) {
         this.exerciseId = exerciseId;
         this.weight = weight;
         this.count = count;
         this.setCount = setCount;
+        this.order = order;
     }
 }

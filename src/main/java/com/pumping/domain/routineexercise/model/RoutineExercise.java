@@ -27,14 +27,14 @@ public class RoutineExercise {
 
     private Integer setCount;
 
-    private Integer order;
+    private Integer setOrder;
 
-    public RoutineExercise(Routine routine, Exercise exercise, Integer weight, Integer count, Integer setCount, Integer order) {
+    public RoutineExercise(Routine routine, Exercise exercise, Integer weight, Integer count, Integer setCount, Integer setOrder) {
         this.routine = routine;
         this.exercise = exercise;
         this.weight = weight;
         this.count = count;
         this.setCount = setCount;
-        this.order = order;
+        this.setOrder = setOrder;
     }
 }

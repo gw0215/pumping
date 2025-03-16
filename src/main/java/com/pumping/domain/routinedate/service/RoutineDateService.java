@@ -1,13 +1,10 @@
-package com.pumping.domain.routine.service;
+package com.pumping.domain.routinedate.service;
 
-import com.pumping.domain.exercise.model.Exercise;
-import com.pumping.domain.exercise.repository.ExerciseRepository;
-import com.pumping.domain.member.model.Member;
 import com.pumping.domain.routine.dto.RoutineDetailResponse;
-import com.pumping.domain.routine.dto.RoutineExerciseRequests;
-import com.pumping.domain.routine.dto.RoutineResponse;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
+import com.pumping.domain.routinedate.model.RoutineDate;
+import com.pumping.domain.routinedate.repository.RoutineDateRepository;
 import com.pumping.domain.routineexercise.dto.ExerciseSetDetail;
 import com.pumping.domain.routineexercise.dto.RoutineExerciseResponse;
 import com.pumping.domain.routineexercise.model.RoutineExercise;
@@ -15,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -22,30 +20,33 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class RoutineService {
+public class RoutineDateService {
+
+    private final RoutineDateRepository routineDateRepository;
 
     private final RoutineRepository routineRepository;
 
-    private final ExerciseRepository exerciseRepository;
-
     @Transactional
-    public void create(Member member, RoutineExerciseRequests routineExerciseRequests) {
-        Routine routine = new Routine(member, routineExerciseRequests.getRoutineName());
+    public void save(Long routineId, LocalDate date) {
 
-        routineExerciseRequests.getRoutineExerciseRequests().forEach(r -> {
-            Exercise exercise = exerciseRepository.findById(r.getExerciseId())
-                    .orElseThrow(() -> new IllegalArgumentException("해당 ID의 운동을 찾을 수 없습니다: " + r.getExerciseId()));
+        Routine routine = routineRepository.findById(routineId).orElseThrow(RuntimeException::new);
 
-            routine.getRoutineExercises().add(new RoutineExercise(routine, exercise, r.getWeight(), r.getCount(), r.getSetCount(), r.getOrder()));
-        });
+        RoutineDate routineDate = new RoutineDate(routine, date);
 
-        routineRepository.save(routine);
+        routineDateRepository.save(routineDate);
+
     }
 
     @Transactional
-    public RoutineDetailResponse findById(Long id) {
-        Routine routine = routineRepository.findById(id)
-                .orElseThrow(RuntimeException::new);
+    public RoutineDetailResponse findByMemberIdAndPerformedDate(Long memberId, LocalDate date) {
+
+        Routine routine = routineRepository
+                .findByMemberIdAndPerformedDate(memberId, date)
+                .orElse(null);
+
+        if (routine == null) {
+            return null;
+        }
 
         List<RoutineExercise> routineExercises = routine.getRoutineExercises();
 
@@ -68,20 +69,6 @@ public class RoutineService {
 
         return new RoutineDetailResponse(routine.getId(), routine.getName(), exerciseResponses);
 
-
     }
-
-    @Transactional
-    public List<RoutineResponse> findAll(Long memberId) {
-
-        List<Routine> routines = routineRepository.findAllByMemberId(memberId);
-
-        return routines.stream()
-                .map(routine ->
-                        new RoutineResponse(routine.getId(), routine.getName()))
-                .collect(Collectors.toList());
-
-    }
-
 
 }

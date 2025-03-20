@@ -20,7 +20,7 @@ public class MediaService {
     private final BoardRepository boardRepository;
 
     @Transactional
-    public Media save(Long boardId, MultipartFile file) {
+    public void save(Long boardId, MultipartFile file) {
 
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(RuntimeException::new);
@@ -32,6 +32,11 @@ public class MediaService {
             throw new RuntimeException(e);
         }
         Media media = new Media(board, file.getOriginalFilename(), file.getContentType(), data);
-        return mediaRepository.save(media);
+        mediaRepository.save(media);
+    }
+
+    @Transactional
+    public Media findById(Long mediaId) {
+        return mediaRepository.findById(mediaId).orElseThrow(RuntimeException::new);
     }
 }

@@ -2,8 +2,12 @@ package com.pumping.domain.media.model;
 
 import com.pumping.domain.board.model.Board;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
+@Getter
 public class Media {
 
     @Id
@@ -18,7 +22,7 @@ public class Media {
     private String fileType;
 
     @Lob
-    private byte[] data;  // Blob 데이터 (이진 데이터)
+    private byte[] data;
 
     public Media(Board board, String fileName, String fileType, byte[] data) {
         this.board = board;

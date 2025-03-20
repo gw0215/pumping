@@ -9,14 +9,16 @@ import java.util.stream.IntStream;
 
 public abstract class BoardFixture {
 
-    public static String CONTENT = "게시글 내용";
+    private static final String TITLE = "제목";
+
+    private static final String CONTENT = "게시글 내용";
 
     public static BoardRequest createBoardRequest() {
-        return new BoardRequest(CONTENT);
+        return new BoardRequest(TITLE, CONTENT);
     }
 
     public static Board createBoard(Member member) {
-        return new Board(member, CONTENT);
+        return new Board(member, TITLE, CONTENT);
     }
 
     public static List<Board> createBoards(Member member, int count) {

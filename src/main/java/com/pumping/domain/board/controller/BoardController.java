@@ -37,8 +37,11 @@ public class BoardController {
 
     @GetMapping(value = "/boards")
     @ResponseStatus(HttpStatus.OK)
-    public List<BoardResponse> findAll() {
-        return boardService.findALl();
+    public List<BoardResponse> findAll(
+            @AuthenticationPrincipal Member member
+    ) {
+        return boardService.findAll(member);
     }
+
 
 }

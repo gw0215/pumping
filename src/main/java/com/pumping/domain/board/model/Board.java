@@ -30,4 +30,12 @@ public class Board {
         this.member = member;
         this.content = content;
     }
+
+    public void plusLikeCount() {
+        this.likeCount++;
+    }
+
+    public void minusLikeCount() {
+        this.likeCount--;
+    }
 }

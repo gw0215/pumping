@@ -2,15 +2,15 @@ package com.pumping.domain.board.dto;
 
 import com.pumping.domain.media.dto.MediaResponse;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
 public class BoardResponse {
 
     private Long id;
+
+    private String memberNickname;
 
     private String title;
 
@@ -20,11 +20,15 @@ public class BoardResponse {
 
     private List<MediaResponse> mediaResponses;
 
-    public BoardResponse(Long id, String title, String content, Integer likeCount, List<MediaResponse> mediaResponses) {
+    private boolean liked;
+
+    public BoardResponse(Long id, String memberNickname, String title, String content, Integer likeCount, List<MediaResponse> mediaResponses, boolean liked) {
         this.id = id;
+        this.memberNickname = memberNickname;
         this.title = title;
         this.content = content;
         this.likeCount = likeCount;
         this.mediaResponses = mediaResponses;
+        this.liked = liked;
     }
 }

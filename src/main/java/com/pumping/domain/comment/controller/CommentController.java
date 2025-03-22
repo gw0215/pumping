@@ -36,7 +36,7 @@ public class CommentController {
     }
 
     @DeleteMapping("boards/{boardId}/comments")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     public void delete(
             @PathVariable("boardId") Long boardId
     ) {

@@ -9,10 +9,13 @@ public class CommentResponse {
 
     private Long id;
 
-    private String comment;
+    private String memberNickname;
 
-    public CommentResponse(Long id, String comment) {
+    private String content;
+
+    public CommentResponse(Long id, String memberNickname, String content) {
         this.id = id;
-        this.comment = comment;
+        this.memberNickname = memberNickname;
+        this.content = content;
     }
 }

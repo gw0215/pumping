@@ -31,7 +31,7 @@ public class CommentService {
     public List<CommentResponse> findAll(Long boardId) {
         return commentRepository.findByBoardId(boardId)
                 .stream()
-                .map(comment -> new CommentResponse(comment.getId(), comment.getComment()))
+                .map(comment -> new CommentResponse(comment.getId(), comment.getMember().getNickname(), comment.getContent()))
                 .toList();
     }
 

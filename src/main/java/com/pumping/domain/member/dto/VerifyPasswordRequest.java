@@ -5,11 +5,11 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class DeleteMemberRequest {
+public class VerifyPasswordRequest {
 
     private String password;
 
-    public DeleteMemberRequest(String password) {
+    public VerifyPasswordRequest(String password) {
         this.password = password;
     }
 

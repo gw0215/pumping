@@ -13,12 +13,9 @@ public class MemberSignUpRequest {
 
     private String nickname;
 
-    private String profileImage;
-
-    public MemberSignUpRequest(String password, String email, String nickname, String profileImage) {
+    public MemberSignUpRequest(String password, String email, String nickname) {
         this.password = password;
         this.email = email;
         this.nickname = nickname;
-        this.profileImage = profileImage;
     }
 }

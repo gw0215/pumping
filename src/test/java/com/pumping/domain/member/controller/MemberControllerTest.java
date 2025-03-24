@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pumping.domain.emailverification.fixture.EmailVerificationFixture;
 import com.pumping.domain.emailverification.model.EmailVerification;
 import com.pumping.domain.emailverification.repository.EmailVerificationRepository;
-import com.pumping.domain.member.dto.DeleteMemberRequest;
 import com.pumping.domain.member.dto.EmailCodeCheckRequest;
 import com.pumping.domain.member.dto.MemberSignUpRequest;
+import com.pumping.domain.member.dto.VerifyPasswordRequest;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.service.MemberService;
 import com.pumping.global.auth.jwt.JwtTokenProvider;
@@ -73,14 +73,14 @@ class MemberControllerTest {
         Long id = memberService.save(memberSignUpRequest);
         String token = jwtTokenProvider.createToken(id);
 
-        DeleteMemberRequest deleteMemberRequest = MemberFixture.createDeleteMemberRequest();
-        String json = objectMapper.writeValueAsString(deleteMemberRequest);
+        VerifyPasswordRequest verifyPasswordRequest = MemberFixture.createDeleteMemberRequest();
+        String json = objectMapper.writeValueAsString(verifyPasswordRequest);
 
         mockMvc.perform(delete("/members")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .content(json))
-                .andExpect(MockMvcResultMatchers.status().isNoContent())
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
     }
 

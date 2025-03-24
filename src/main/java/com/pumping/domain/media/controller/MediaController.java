@@ -25,7 +25,7 @@ public class MediaController {
 
     @GetMapping(value = "/media/{mediaId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public byte[] upload(
+    public byte[] findById(
             @PathVariable("mediaId") Long mediaId
     ) {
         Media media = mediaService.findById(mediaId);

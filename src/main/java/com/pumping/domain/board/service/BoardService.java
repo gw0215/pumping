@@ -32,6 +32,7 @@ public class BoardService {
     public List<BoardResponse> findAll(Member member) {
         return boardRepository.findAll()
                 .stream()
+                .filter(board -> !board.member.isDeleted())
                 .map(board -> {
 
                     List<MediaResponse> mediaResponses = board.getMediaList().stream()

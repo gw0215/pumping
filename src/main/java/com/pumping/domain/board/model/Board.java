@@ -14,14 +14,19 @@ import java.util.List;
 @NoArgsConstructor
 public class Board {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    public Member member;
-    public String title;
-    public String content;
-    public Integer likeCount = 0;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    public String title;
+
+    public String content;
+
+    public Integer likeCount = 0;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    public Member member;
+
     @OneToMany(mappedBy = "board")
     private List<Media> mediaList = new ArrayList<>();
 

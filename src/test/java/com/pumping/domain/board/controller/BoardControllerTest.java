@@ -29,8 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -110,6 +109,41 @@ class BoardControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    @Transactional
+    void 게시글_수정_API_성공() throws Exception {
+
+        Board board = BoardFixture.createBoard(member);
+        boardRepository.save(board);
+
+        BoardRequest boardRequest = BoardFixture.createBoardRequest();
+        String json = objectMapper.writeValueAsString(boardRequest);
+
+        mockMvc.perform(patch("/boards/{boardId}",board.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isNoContent())
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    @Transactional
+    void 게시글_삭제_API_성공() throws Exception {
+
+        Board board = BoardFixture.createBoard(member);
+        boardRepository.save(board);
+
+        mockMvc.perform(delete("/boards/{boardId}", board.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isNoContent())
                 .andDo(MockMvcResultHandlers.print());
 
     }

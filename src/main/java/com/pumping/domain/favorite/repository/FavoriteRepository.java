@@ -10,6 +10,4 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
 
     void deleteByMemberAndBoard(@Param("member") Member member, @Param("board") Board board);
 
-    boolean existsByMemberAndBoard(Member member, Board board);
-
 }

@@ -5,18 +5,16 @@ import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
 import com.pumping.domain.routinedate.model.RoutineDate;
 import com.pumping.domain.routinedate.repository.RoutineDateRepository;
-import com.pumping.domain.routineexercise.dto.ExerciseSetDetail;
+import com.pumping.domain.routineexercise.dto.ExerciseSetResponse;
 import com.pumping.domain.routineexercise.dto.RoutineExerciseResponse;
+import com.pumping.domain.routineexercise.model.ExerciseSet;
 import com.pumping.domain.routineexercise.model.RoutineExercise;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -38,36 +36,31 @@ public class RoutineDateService {
     }
 
     @Transactional
-    public RoutineDetailResponse findByMemberIdAndPerformedDate(Long memberId, LocalDate date) {
+    public Optional<RoutineDetailResponse> findByMemberIdAndPerformedDate(Long memberId, LocalDate date) {
+        Optional<Routine> optionalRoutine =  routineRepository.findByMemberIdAndPerformedDate(memberId, date);
 
-        Routine routine = routineRepository
-                .findByMemberIdAndPerformedDate(memberId, date)
-                .orElse(null);
-
-        if (routine == null) {
-            return null;
+        if (optionalRoutine.isEmpty()) {
+            return Optional.empty();
         }
 
+        Routine routine = optionalRoutine.get();
+
         List<RoutineExercise> routineExercises = routine.getRoutineExercises();
+        List<RoutineExerciseResponse> routineExerciseResponses = new ArrayList<>();
 
-        Map<Integer, List<RoutineExercise>> collect = routineExercises.stream().collect(Collectors.groupingBy(RoutineExercise::getSetOrder));
+        for (RoutineExercise routineExercise : routineExercises) {
+            List<ExerciseSet> exerciseSets = routineExercise.getExerciseSets();
 
-        List<RoutineExerciseResponse> exerciseResponses = collect.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .map(entry -> {
-                    List<RoutineExercise> exercises = entry.getValue();
-                    RoutineExercise first = exercises.get(0);
+            List<ExerciseSetResponse> exerciseSetResponses = new ArrayList<>();
 
-                    List<ExerciseSetDetail> setDetails = exercises.stream()
-                            .map(re -> new ExerciseSetDetail(re.getSetCount(), re.getWeight(), re.getCount()))
-                            .sorted(Comparator.comparing(ExerciseSetDetail::getSet))
-                            .collect(Collectors.toList());
+            for (ExerciseSet exerciseSet : exerciseSets) {
+                exerciseSetResponses.add(new ExerciseSetResponse(exerciseSet.getSetCount(), exerciseSet.getWeight(), exerciseSet.getCount()));
+            }
 
-                    return new RoutineExerciseResponse(first.getExercise().getName(), setDetails);
-                })
-                .collect(Collectors.toList());
+            new RoutineExerciseResponse(routineExercise.getExercise().getName(), exerciseSetResponses);
+        }
 
-        return new RoutineDetailResponse(routine.getId(), routine.getName(), exerciseResponses);
+        return Optional.of(new RoutineDetailResponse(routine.getId(), routine.getName(), routineExerciseResponses));
 
     }
 

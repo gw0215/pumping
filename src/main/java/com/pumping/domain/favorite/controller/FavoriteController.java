@@ -23,7 +23,7 @@ public class FavoriteController {
     }
 
     @DeleteMapping(value = "/boards/{boardId}/favorite")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @AuthenticationPrincipal Member member,
             @PathVariable("boardId") Long boardId

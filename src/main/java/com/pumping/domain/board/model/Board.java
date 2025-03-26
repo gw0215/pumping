@@ -1,5 +1,6 @@
 package com.pumping.domain.board.model;
 
+import com.pumping.domain.favorite.model.Favorite;
 import com.pumping.domain.media.model.Media;
 import com.pumping.domain.member.model.Member;
 import jakarta.persistence.*;
@@ -27,13 +28,28 @@ public class Board {
     @ManyToOne(fetch = FetchType.LAZY)
     public Member member;
 
-    @OneToMany(mappedBy = "board")
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Media> mediaList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    private List<Favorite> favoriteList = new ArrayList<>();
 
     public Board(Member member, String title, String content) {
         this.title = title;
         this.member = member;
         this.content = content;
+    }
+
+    public void updateTitle(String title) {
+        this.title = title;
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public void addMedia(Media media) {
+        mediaList.add(media);
     }
 
     public void plusLikeCount() {

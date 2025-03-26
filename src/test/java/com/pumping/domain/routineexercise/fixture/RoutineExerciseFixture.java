@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 public abstract class RoutineExerciseFixture {
 
     public static RoutineExercise createRoutineExercise(Routine routine, Exercise exercise) {
-        return new RoutineExercise(routine, exercise, 10, 5, 1, 1);
+        return new RoutineExercise(routine, exercise, 1);
     }
 
     public static RoutineExerciseRequest createRoutineExerciseRequest(Long exerciseId) {

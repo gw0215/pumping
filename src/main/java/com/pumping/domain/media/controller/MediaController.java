@@ -28,8 +28,7 @@ public class MediaController {
     public byte[] findById(
             @PathVariable("mediaId") Long mediaId
     ) {
-        Media media = mediaService.findById(mediaId);
-        return media.getData();
+        return mediaService.findById(mediaId);
     }
 
 }

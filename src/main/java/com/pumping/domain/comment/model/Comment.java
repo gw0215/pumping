@@ -28,4 +28,8 @@ public class Comment {
         this.board = board;
         this.content = content;
     }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

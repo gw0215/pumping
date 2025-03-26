@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pumping.domain.board.fixture.BoardFixture;
 import com.pumping.domain.board.model.Board;
 import com.pumping.domain.board.repository.BoardRepository;
+import com.pumping.domain.media.fixture.MediaFixture;
+import com.pumping.domain.media.model.Media;
+import com.pumping.domain.media.repository.MediaRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
@@ -25,6 +28,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 @SpringBootTest
@@ -49,6 +53,9 @@ class MediaControllerTest {
 
     @Autowired
     BoardRepository boardRepository;
+
+    @Autowired
+    MediaRepository mediaRepository;
 
     Member member;
 
@@ -76,6 +83,24 @@ class MediaControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    @Transactional
+    void 이미지_조회_API_성공() throws Exception {
+
+        Board board = BoardFixture.createBoard(member);
+        boardRepository.save(board);
+
+        Media media = MediaFixture.createMedia(board);
+        mediaRepository.save(media);
+
+        mockMvc.perform(get("/media/{mediaId}", media.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
 
     }

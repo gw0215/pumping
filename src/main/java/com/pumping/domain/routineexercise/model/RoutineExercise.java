@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -21,20 +24,18 @@ public class RoutineExercise {
     @ManyToOne(fetch = FetchType.LAZY)
     private Exercise exercise;
 
-    private Integer weight;
-
-    private Integer count;
-
-    private Integer setCount;
-
     private Integer setOrder;
 
-    public RoutineExercise(Routine routine, Exercise exercise, Integer weight, Integer count, Integer setCount, Integer setOrder) {
+    @OneToMany
+    private List<ExerciseSet> exerciseSets = new ArrayList<>();
+
+    public RoutineExercise(Routine routine, Exercise exercise, Integer setOrder) {
         this.routine = routine;
         this.exercise = exercise;
-        this.weight = weight;
-        this.count = count;
-        this.setCount = setCount;
         this.setOrder = setOrder;
+    }
+
+    public void addExerciseSet(ExerciseSet exerciseSet) {
+        exerciseSets.add(exerciseSet);
     }
 }

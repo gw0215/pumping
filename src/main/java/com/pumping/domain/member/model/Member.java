@@ -26,7 +26,7 @@ public class Member {
     @Lob
     private byte[] profileImage;
 
-    private boolean isDeleted = false;
+    private boolean deleted = false;
 
     @OneToMany(mappedBy = "member")
     private List<Routine> routines = new ArrayList<>();
@@ -43,7 +43,7 @@ public class Member {
     }
 
     public void deleteMember() {
-        this.isDeleted = true;
+        this.deleted = true;
     }
 
 }

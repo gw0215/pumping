@@ -1,10 +1,8 @@
 package com.pumping.domain.exercise.dto;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
 public class ExerciseResponse {
 
     private Long id;

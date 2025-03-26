@@ -1,6 +1,5 @@
 package com.pumping.domain.member.controller;
 
-import com.pumping.domain.member.dto.EmailCodeCheckRequest;
 import com.pumping.domain.member.dto.MemberResponse;
 import com.pumping.domain.member.dto.MemberSignUpRequest;
 import com.pumping.domain.member.dto.VerifyPasswordRequest;
@@ -9,7 +8,6 @@ import com.pumping.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +28,7 @@ public class MemberController {
     }
 
     @GetMapping(value = "/members/profile")
+    @ResponseStatus(HttpStatus.OK)
     public MemberResponse getProfile
             (
                     @AuthenticationPrincipal Member member
@@ -47,25 +46,9 @@ public class MemberController {
         memberService.delete(member.getId());
     }
 
-    @GetMapping(value = "/members/email")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void sendEmail
-            (
-                    @RequestParam("email") String email
-            ) {
-        memberService.sendCodeEmail(email);
-    }
-
-    @PostMapping(value = "/members/email")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void checkEmailCode
-            (
-                    @RequestBody EmailCodeCheckRequest emailCodeCheckRequest
-            ) {
-        memberService.checkCode(emailCodeCheckRequest);
-    }
 
     @GetMapping(value = "/members/profile-image")
+    @ResponseStatus(HttpStatus.OK)
     public byte[] getProfileImage
             (
                     @AuthenticationPrincipal Member member
@@ -73,28 +56,23 @@ public class MemberController {
         return memberService.getProfileImage(member.getId());
     }
 
-
     @PatchMapping(value = "/members/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateProfileImage
             (
                     @AuthenticationPrincipal Member member,
                     @RequestPart(value = "file", required = false) MultipartFile file
             ) {
-        memberService.updateProfileImage(member, file);
+        memberService.updateProfileImage(member.getId(), file);
     }
 
     @PostMapping("/verify-password")
-    public ResponseEntity<Void> verifyPassword(
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void verifyPassword(
             @RequestBody VerifyPasswordRequest request,
             @AuthenticationPrincipal Member member
     ) {
-        boolean isValid = memberService.verifyPassword(member, request.getPassword());
-        if (isValid) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        memberService.verifyPassword(member, request.getPassword());
     }
 
 

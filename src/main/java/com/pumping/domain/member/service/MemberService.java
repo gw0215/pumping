@@ -1,13 +1,9 @@
 package com.pumping.domain.member.service;
 
-import com.pumping.domain.emailverification.model.EmailVerification;
-import com.pumping.domain.emailverification.repository.EmailVerificationRepository;
-import com.pumping.domain.member.dto.EmailCodeCheckRequest;
 import com.pumping.domain.member.dto.MemberSignUpRequest;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
-import com.pumping.global.common.util.MailService;
-import com.pumping.global.common.util.RandomCodeGenerator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -28,13 +23,8 @@ public class MemberService {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    private final MailService mailService;
-
-    private final EmailVerificationRepository emailVerificationRepository;
-
     @Transactional
     public Long save(MemberSignUpRequest memberSignUpRequest) {
-
         String encodePassword = bCryptPasswordEncoder.encode(memberSignUpRequest.getPassword());
         Member member = new Member(memberSignUpRequest.getNickname(), memberSignUpRequest.getEmail(), encodePassword, loadDefaultProfileImage());
         Member saveMember = memberRepository.save(member);
@@ -46,52 +36,27 @@ public class MemberService {
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream("static/images/default_profile.jpg");
             return (inputStream != null) ? inputStream.readAllBytes() : new byte[0];
         } catch (IOException e) {
-            e.printStackTrace();
             return new byte[0];
         }
     }
 
     @Transactional
     public void delete(Long memberId) {
-
-        Member member = memberRepository.findById(memberId).orElseThrow(RuntimeException::new);
-
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다. 회원 ID : " + memberId));
         member.deleteMember();
-
-    }
-
-    public void sendCodeEmail(String email) {
-        String code = RandomCodeGenerator.generateCode();
-        mailService.sendCodeEmail(code, email);
-    }
-
-    @Transactional(readOnly = true)
-    public void checkCode(EmailCodeCheckRequest emailCodeCheckRequest) {
-
-        EmailVerification emailVerification = emailVerificationRepository.findByEmail(emailCodeCheckRequest.getEmail())
-                .orElseThrow(RuntimeException::new);
-
-        String code = emailVerification.getCode();
-
-        if (!Objects.equals(code, emailCodeCheckRequest.getCode())) {
-            throw new RuntimeException();
-        }
-
     }
 
     @Transactional(readOnly = true)
     public byte[] getProfileImage(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(RuntimeException::new);
-
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다. 회원 ID : " + memberId));
         return member.getProfileImage();
     }
 
     @Transactional
-    public void updateProfileImage(Member member, MultipartFile file) {
+    public void updateProfileImage(Long memberId, MultipartFile file) {
+        Member member1 = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다. 회원 ID : " + memberId));
 
-        Member member1 = memberRepository.findById(member.getId()).orElseThrow(RuntimeException::new);
-
-        byte[] data = null;
+        byte[] data;
         try {
             data = file.getBytes();
             member1.updateMemberProfileImage(data);
@@ -100,8 +65,10 @@ public class MemberService {
         }
     }
 
-    public boolean verifyPassword(Member member, String password) {
-        return bCryptPasswordEncoder.matches(password, member.getPassword());
+    public void verifyPassword(Member member, String password) {
+        if (!bCryptPasswordEncoder.matches(password, member.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
     }
 
 }

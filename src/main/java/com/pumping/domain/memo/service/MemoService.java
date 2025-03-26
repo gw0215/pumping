@@ -19,11 +19,9 @@ public class MemoService {
 
     @Transactional
     public void save(Member member, Long exerciseId, String detail) {
-
         Exercise exercise = exerciseRepository.findById(exerciseId).orElseThrow(RuntimeException::new);
         Memo memo = new Memo(member, exercise, detail);
         memoRepository.save(memo);
-
     }
 
 }

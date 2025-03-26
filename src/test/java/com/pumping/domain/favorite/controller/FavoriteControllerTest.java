@@ -96,7 +96,7 @@ class FavoriteControllerTest {
         mockMvc.perform(delete("/boards/{boardId}/favorite", board.getId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.status().isNoContent())
                 .andDo(MockMvcResultHandlers.print());
 
     }

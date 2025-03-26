@@ -48,9 +48,6 @@ class RoutineDateControllerTest {
     JwtTokenProvider jwtTokenProvider;
 
     @Autowired
-    ExerciseRepository exerciseRepository;
-
-    @Autowired
     MemberRepository memberRepository;
 
     @Autowired
@@ -58,9 +55,6 @@ class RoutineDateControllerTest {
 
     @Autowired
     RoutineDateRepository routineDateRepository;
-
-    @Autowired
-    RoutineExerciseRepository routineExerciseRepository;
 
     @MockitoBean
     JavaMailSender javaMailSender;

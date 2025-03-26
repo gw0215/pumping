@@ -35,11 +35,20 @@ public class CommentController {
         return commentService.findAll(boardId);
     }
 
-    @DeleteMapping("boards/{boardId}/comments")
-    @ResponseStatus(HttpStatus.OK)
-    public void delete(
-            @PathVariable("boardId") Long boardId
+    @PatchMapping("boards/{boardId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void update(
+            @PathVariable("commentId") Long commentId,
+            @RequestBody CommentRequest commentRequest
     ) {
-        commentService.delete(boardId);
+        commentService.update(commentId,commentRequest.getComment());
+    }
+
+    @DeleteMapping("boards/{boardId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(
+            @PathVariable("commentId") Long commentId
+    ) {
+        commentService.delete(commentId);
     }
 }

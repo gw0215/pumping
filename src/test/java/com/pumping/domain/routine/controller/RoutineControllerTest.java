@@ -61,9 +61,6 @@ class RoutineControllerTest {
     @Autowired
     RoutineRepository routineRepository;
 
-    @Autowired
-    RoutineExerciseRepository routineExerciseRepository;
-
     @MockitoBean
     JavaMailSender javaMailSender;
 

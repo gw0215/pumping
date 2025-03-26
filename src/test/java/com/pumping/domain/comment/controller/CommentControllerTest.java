@@ -113,6 +113,29 @@ class CommentControllerTest {
 
     @Test
     @Transactional
+    void 댓글_수정_API_성공() throws Exception {
+
+        Board board = BoardFixture.createBoard(member);
+        boardRepository.save(board);
+
+        Comment comment = CommentFixture.createComment(member, board);
+        commentRepository.save(comment);
+
+        CommentRequest commentRequest = CommentFixture.createCommentRequest();
+        String json = objectMapper.writeValueAsString(commentRequest);
+
+        mockMvc.perform(patch("/boards/{boardId}/comments/{commentId}",board.getId(), comment.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(MockMvcResultMatchers.status().isNoContent())
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    @Transactional
     void 댓글_삭제_API_성공() throws Exception {
 
         Board board = BoardFixture.createBoard(member);
@@ -121,10 +144,10 @@ class CommentControllerTest {
         Comment comment = CommentFixture.createComment(member, board);
         commentRepository.save(comment);
 
-        mockMvc.perform(delete("/boards/{boardId}/comments", board.getId())
+        mockMvc.perform(delete("/boards/{boardId}/comments/{commentId}", board.getId(), comment.getId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.status().isNoContent())
                 .andDo(MockMvcResultHandlers.print());
 
     }

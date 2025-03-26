@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    Optional<Member> findByEmailAndIsDeletedFalse(@Param("email") String email);
+    Optional<Member> findByEmailAndDeletedFalse(@Param("email") String email);
 
 }

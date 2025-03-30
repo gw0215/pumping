@@ -14,8 +14,6 @@ import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
 import com.pumping.domain.routineexercise.fixture.RoutineExerciseFixture;
 import com.pumping.domain.routineexercise.model.RoutineExercise;
-import com.pumping.domain.routineexercise.repository.RoutineExerciseRepository;
-import com.pumping.global.auth.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -23,9 +21,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -50,9 +48,6 @@ class RoutineControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
     ExerciseRepository exerciseRepository;
 
     @Autowired
@@ -66,14 +61,10 @@ class RoutineControllerTest {
 
     Member member;
 
-    String token;
-
     @BeforeEach
     void setUp() {
         member = MemberFixture.createMember();
         memberRepository.save(member);
-
-        token = jwtTokenProvider.createToken(member.getId());
     }
 
 
@@ -89,8 +80,11 @@ class RoutineControllerTest {
 
         String json = objectMapper.writeValueAsString(routineExerciseRequests);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(post("/routines")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -113,8 +107,11 @@ class RoutineControllerTest {
         routineRepository.save(routine);
         exerciseRepository.save(exercise);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(get("/routines")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -136,8 +133,11 @@ class RoutineControllerTest {
         routineRepository.save(routine);
         exerciseRepository.save(exercise);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(get("/routines/{id}", routine.getId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());

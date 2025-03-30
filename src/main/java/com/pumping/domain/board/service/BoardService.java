@@ -3,7 +3,6 @@ package com.pumping.domain.board.service;
 import com.pumping.domain.board.dto.BoardResponse;
 import com.pumping.domain.board.model.Board;
 import com.pumping.domain.board.repository.BoardRepository;
-import com.pumping.domain.favorite.repository.FavoriteRepository;
 import com.pumping.domain.media.dto.MediaResponse;
 import com.pumping.domain.media.model.Media;
 import com.pumping.domain.member.model.Member;
@@ -28,8 +27,6 @@ import java.util.List;
 public class BoardService {
 
     private final BoardRepository boardRepository;
-
-    private final FavoriteRepository favoriteRepository;
 
     @Transactional
     public void save(Member member, String title, String content, MultipartFile file) {
@@ -66,7 +63,7 @@ public class BoardService {
 
             boolean liked = !board.getFavoriteList().isEmpty();
 
-            boardResponses.add(new BoardResponse(board.getId(), board.member.getNickname(), board.getTitle(), board.getContent(), board.likeCount, mediaResponses, liked));
+            boardResponses.add(new BoardResponse(board.getId(), board.member.getId(), board.member.getNickname(), board.getTitle(), board.getContent(), board.likeCount, board.commentCount, mediaResponses, liked));
         }
 
         return new PageImpl<>(boardResponses, pageable, boardPage.getTotalElements());
@@ -75,7 +72,7 @@ public class BoardService {
 
     @Transactional
     public void update(Member member,Long boardId, String title, String content) {
-        Board board = boardRepository.findById(boardId).orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. 게시글 ID : " + boardId));;
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. 게시글 ID : " + boardId));
         board.updateTitle(title);
         board.updateContent(content);
     }
@@ -83,7 +80,8 @@ public class BoardService {
 
     @Transactional
     public void deleteById(Long boardId) {
-        boardRepository.deleteById(boardId);
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. 게시글 ID : " + boardId));
+        board.deleteBoard();
     }
 
 }

@@ -1,4 +1,4 @@
 package com.pumping.domain.comment.dto;
 
 
-public record CommentResponse(Long id, String memberNickname, String content) { }
+public record CommentResponse(Long commentId, Long memberId, String memberNickname, String content) { }

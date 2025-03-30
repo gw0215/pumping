@@ -7,9 +7,6 @@ import com.pumping.domain.exercise.repository.ExerciseRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
-import com.pumping.domain.routine.repository.RoutineRepository;
-import com.pumping.domain.routineexercise.repository.RoutineExerciseRepository;
-import com.pumping.global.auth.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -17,9 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -42,33 +39,20 @@ class ExerciseControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
     ExerciseRepository exerciseRepository;
 
     @Autowired
     MemberRepository memberRepository;
-
-    @Autowired
-    RoutineRepository routineRepository;
-
-    @Autowired
-    RoutineExerciseRepository routineExerciseRepository;
 
     @MockitoBean
     JavaMailSender javaMailSender;
 
     Member member;
 
-    String token;
-
     @BeforeEach
     void setUp() {
         member = MemberFixture.createMember();
         memberRepository.save(member);
-
-        token = jwtTokenProvider.createToken(member.getId());
     }
 
     @Test
@@ -79,8 +63,11 @@ class ExerciseControllerTest {
 
         exerciseRepository.saveAll(exercises);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(get("/exercises")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())

@@ -11,7 +11,6 @@ import com.pumping.domain.comment.repository.CommentRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
-import com.pumping.global.auth.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -19,9 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -45,9 +44,6 @@ class CommentControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
     MemberRepository memberRepository;
 
     @MockitoBean
@@ -61,14 +57,10 @@ class CommentControllerTest {
 
     Member member;
 
-    String token;
-
     @BeforeEach
     void setUp() {
         member = MemberFixture.createMember();
         memberRepository.save(member);
-
-        token = jwtTokenProvider.createToken(member.getId());
     }
 
     @Test
@@ -82,8 +74,11 @@ class CommentControllerTest {
 
         String json = objectMapper.writeValueAsString(commentRequest);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(post("/boards/{boardId}/comments", board.getId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -102,9 +97,11 @@ class CommentControllerTest {
         List<Comment> comments = CommentFixture.createComments(member, board, 5);
         commentRepository.saveAll(comments);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
 
         mockMvc.perform(get("/boards/{boardId}/comments", board.getId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
@@ -124,8 +121,11 @@ class CommentControllerTest {
         CommentRequest commentRequest = CommentFixture.createCommentRequest();
         String json = objectMapper.writeValueAsString(commentRequest);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(patch("/boards/{boardId}/comments/{commentId}",board.getId(), comment.getId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -144,8 +144,11 @@ class CommentControllerTest {
         Comment comment = CommentFixture.createComment(member, board);
         commentRepository.save(comment);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(delete("/boards/{boardId}/comments/{commentId}", board.getId(), comment.getId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isNoContent())
                 .andDo(MockMvcResultHandlers.print());

@@ -6,13 +6,18 @@ import com.pumping.domain.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 @Slf4j
 @Service
@@ -20,16 +25,58 @@ import java.io.InputStream;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    @Value("${security.pbkdf2.iterations}")
+    private int iterations;
 
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Value("${security.pbkdf2.key-length}")
+    private int keyLength;
+
+    @Value("${security.pbkdf2.algorithm}")
+    private String algorithm;
 
     @Transactional
     public Long save(MemberSignUpRequest memberSignUpRequest) {
-        String encodePassword = bCryptPasswordEncoder.encode(memberSignUpRequest.getPassword());
-        Member member = new Member(memberSignUpRequest.getNickname(), memberSignUpRequest.getEmail(), encodePassword, loadDefaultProfileImage());
-        Member saveMember = memberRepository.save(member);
-        return saveMember.getId();
+
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+
+        try {
+            PBEKeySpec spec = new PBEKeySpec(memberSignUpRequest.getPassword().toCharArray(), salt, iterations, keyLength);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
+            byte[] hash = skf.generateSecret(spec).getEncoded();
+            String encodedSalt = Base64.getEncoder().encodeToString(salt);
+            String encodePassword = encodedSalt+"."+Base64.getEncoder().encodeToString(hash);
+            Member member = new Member(memberSignUpRequest.getNickname(), memberSignUpRequest.getEmail(), encodePassword, loadDefaultProfileImage());
+            Member saveMember = memberRepository.save(member);
+            return saveMember.getId();
+        } catch (Exception e) {
+            throw new RuntimeException("Error hashing password", e);
+        }
+
+
     }
+
+    public boolean verifyPassword(Member member, String password) {
+        try {
+            String[] parts = member.getPassword().split("\\.");
+
+            byte[] salt = Base64.getDecoder().decode(parts[0]);
+            byte[] storedHash = Base64.getDecoder().decode(parts[1]);
+
+            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, keyLength);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
+            byte[] computedHash = skf.generateSecret(spec).getEncoded();
+
+            if (!MessageDigest.isEqual(storedHash, computedHash)) {
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException("비밀번호 검증 중 오류 발생", e);
+        }
+    }
+
 
     private byte[] loadDefaultProfileImage() {
         try {
@@ -65,10 +112,17 @@ public class MemberService {
         }
     }
 
-    public void verifyPassword(Member member, String password) {
-        if (!bCryptPasswordEncoder.matches(password, member.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+    @Transactional(readOnly = true)
+    public Member login (String email, String password) {
+        Member member = memberRepository.findByEmailAndDeletedFalse(email).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다. 회원 이메일 : " + email));
+
+        if (!verifyPassword(member, password)) {
+            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
+
+        return member;
     }
+
+
 
 }

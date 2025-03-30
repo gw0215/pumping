@@ -1,24 +1,21 @@
 package com.pumping.domain.member.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pumping.domain.emailverification.fixture.EmailVerificationFixture;
-import com.pumping.domain.emailverification.model.EmailVerification;
-import com.pumping.domain.emailverification.repository.EmailVerificationRepository;
-import com.pumping.domain.member.dto.EmailCodeCheckRequest;
 import com.pumping.domain.member.dto.MemberSignUpRequest;
 import com.pumping.domain.member.dto.VerifyPasswordRequest;
 import com.pumping.domain.member.fixture.MemberFixture;
+import com.pumping.domain.member.model.Member;
+import com.pumping.domain.member.repository.MemberRepository;
 import com.pumping.domain.member.service.MemberService;
-import com.pumping.global.auth.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -39,10 +36,7 @@ class MemberControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
-    MemberService memberService;
+    MemberRepository memberRepository;
 
     @MockitoBean
     JavaMailSender javaMailSender;
@@ -66,17 +60,16 @@ class MemberControllerTest {
     @Transactional
     void 사용자_삭제_API_성공() throws Exception {
 
-        MemberSignUpRequest memberSignUpRequest = MemberFixture.createMemberSignUpRequest();
-        Long id = memberService.save(memberSignUpRequest);
-        String token = jwtTokenProvider.createToken(id);
 
-        VerifyPasswordRequest verifyPasswordRequest = MemberFixture.createDeleteMemberRequest();
-        String json = objectMapper.writeValueAsString(verifyPasswordRequest);
+        Member member = MemberFixture.createMember();
+        memberRepository.save(member);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
 
         mockMvc.perform(delete("/members")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .content(json))
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
     }

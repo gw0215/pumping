@@ -1,11 +1,11 @@
 package com.pumping.domain.board.dto;
 
 import com.pumping.domain.media.dto.MediaResponse;
-import lombok.Getter;
 
 import java.util.List;
 
-public record BoardResponse(Long id, String memberNickname, String title, String content, Integer likeCount,
+public record BoardResponse(Long boardId, Long memberId, String memberNickname, String title, String content,
+                            Integer likeCount, Integer commentCount,
                             List<MediaResponse> mediaResponses, boolean liked) {
 
 }

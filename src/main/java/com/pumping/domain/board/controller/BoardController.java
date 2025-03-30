@@ -10,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,7 +22,7 @@ public class BoardController {
     @PostMapping(value = "/boards", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public void save(
-            @AuthenticationPrincipal Member member,
+            @SessionAttribute("member") Member member,
             @RequestPart("board") BoardRequest boardRequest,
             @RequestPart(value = "file", required = false) MultipartFile file
     ) {
@@ -33,7 +32,7 @@ public class BoardController {
     @GetMapping(value = "/boards")
     @ResponseStatus(HttpStatus.OK)
     public Page<BoardResponse> findAll(
-            @AuthenticationPrincipal Member member,
+            @SessionAttribute("member") Member member,
             @PageableDefault Pageable pageable
     ) {
         return boardService.findAll(member, pageable);
@@ -42,8 +41,8 @@ public class BoardController {
     @PatchMapping(value = "/boards/{boardId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(
+            @SessionAttribute("member") Member member,
             @PathVariable("boardId") Long boardId,
-            @AuthenticationPrincipal Member member,
             @RequestBody BoardRequest boardRequest
     ) {
         boardService.update(member, boardId, boardRequest.getTitle(), boardRequest.getContent());

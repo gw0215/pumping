@@ -10,7 +10,6 @@ import com.pumping.domain.favorite.repository.FavoriteRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
-import com.pumping.global.auth.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -21,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -37,12 +37,6 @@ class FavoriteControllerTest {
 
     @Autowired
     MockMvc mockMvc;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     MemberRepository memberRepository;
@@ -64,8 +58,6 @@ class FavoriteControllerTest {
     void setUp() {
         member = MemberFixture.createMember();
         memberRepository.save(member);
-
-        token = jwtTokenProvider.createToken(member.getId());
     }
 
     @Test
@@ -75,8 +67,11 @@ class FavoriteControllerTest {
         Board board = BoardFixture.createBoard(member);
         boardRepository.save(board);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(post("/boards/{boardId}/favorite", board.getId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andDo(MockMvcResultHandlers.print());
@@ -93,8 +88,11 @@ class FavoriteControllerTest {
         Favorite favorite = FavoriteFixture.createFavorite(member, board);
         favoriteRepository.save(favorite);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(delete("/boards/{boardId}/favorite", board.getId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isNoContent())
                 .andDo(MockMvcResultHandlers.print());

@@ -12,8 +12,6 @@ import com.pumping.domain.routinedate.dto.RoutineDateRequest;
 import com.pumping.domain.routinedate.fixture.RoutineDateFixture;
 import com.pumping.domain.routinedate.model.RoutineDate;
 import com.pumping.domain.routinedate.repository.RoutineDateRepository;
-import com.pumping.domain.routineexercise.repository.RoutineExerciseRepository;
-import com.pumping.global.auth.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -24,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -45,9 +44,6 @@ class RoutineDateControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
     MemberRepository memberRepository;
 
     @Autowired
@@ -61,14 +57,10 @@ class RoutineDateControllerTest {
 
     Member member;
 
-    String token;
-
     @BeforeEach
     void setUp() {
         member = MemberFixture.createMember();
         memberRepository.save(member);
-
-        token = jwtTokenProvider.createToken(member.getId());
     }
 
 
@@ -83,8 +75,11 @@ class RoutineDateControllerTest {
 
         String json = objectMapper.writeValueAsString(routineDateRequest);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(post("/routine-date")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -103,8 +98,11 @@ class RoutineDateControllerTest {
         RoutineDate routineDate = RoutineDateFixture.createRoutineDate(routine);
         routineDateRepository.save(routineDate);
 
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
         mockMvc.perform(get("/routine-date")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .session(session)
                         .param("routineDate", routineDate.getPerformedDate().toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())

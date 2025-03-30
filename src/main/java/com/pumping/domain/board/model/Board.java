@@ -25,6 +25,8 @@ public class Board {
 
     public Integer likeCount = 0;
 
+    public Integer commentCount = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     public Member member;
 
@@ -33,6 +35,8 @@ public class Board {
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Favorite> favoriteList = new ArrayList<>();
+
+    private boolean deleted = false;
 
     public Board(Member member, String title, String content) {
         this.title = title;
@@ -58,5 +62,17 @@ public class Board {
 
     public void minusLikeCount() {
         this.likeCount--;
+    }
+
+    public void deleteBoard() {
+        this.deleted = true;
+    }
+
+    public void plusCommentCount() {
+        this.commentCount++;
+    }
+
+    public void minusCommentCount() {
+        this.commentCount--;
     }
 }

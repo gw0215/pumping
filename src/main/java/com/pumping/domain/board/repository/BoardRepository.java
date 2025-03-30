@@ -12,7 +12,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     @Query("SELECT b FROM Board b " +
             "LEFT JOIN Favorite f on f.board = b AND f.member = :member " +
-            "WHERE b.member.deleted = false")
+            "WHERE b.member.deleted = false AND b.deleted = false")
     Page<Board> findBoardsWithFavoritesByMember(@Param("member") Member member, Pageable pageable);
 
 }

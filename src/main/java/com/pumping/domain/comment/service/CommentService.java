@@ -23,10 +23,11 @@ public class CommentService {
     private final BoardRepository boardRepository;
 
     @Transactional
-    public void save(Member member, Long boardId, String comment) {
+    public void save(Member member, Long boardId, String content) {
         Board board = boardRepository.findById(boardId).orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. 게시글 ID : " + boardId));
-        Comment comment1 = new Comment(member, board, comment);
-        commentRepository.save(comment1);
+        board.plusCommentCount();
+        Comment comment = new Comment(member, board, content);
+        commentRepository.save(comment);
     }
 
     @Transactional(readOnly = true)
@@ -37,7 +38,7 @@ public class CommentService {
         List<CommentResponse> commentResponses = new ArrayList<>();
 
         for (Comment comment : comments) {
-            commentResponses.add(new CommentResponse(comment.getId(), comment.getMember().getNickname(), comment.getContent()));
+            commentResponses.add(new CommentResponse(comment.getId(), comment.getMember().getId(), comment.getMember().getNickname(), comment.getContent()));
         }
 
         return commentResponses;
@@ -51,7 +52,9 @@ public class CommentService {
 
 
     @Transactional
-    public void delete(Long commentId) {
+    public void delete(Long boardId, Long commentId) {
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. 게시글 ID : " + boardId));
+        board.minusCommentCount();
         commentRepository.deleteById(commentId);
     }
 

@@ -19,16 +19,16 @@ public class Exercise {
 
     private String name;
 
-    private String explain;
+    private String explanation;
 
     private String part;
 
     @OneToMany(mappedBy = "exercise")
     private List<RoutineExercise> routineExercise = new ArrayList<>();
 
-    public Exercise(String name, String explain, String part) {
+    public Exercise(String name, String explanation, String part) {
         this.name = name;
-        this.explain = explain;
+        this.explanation = explanation;
         this.part = part;
     }
 

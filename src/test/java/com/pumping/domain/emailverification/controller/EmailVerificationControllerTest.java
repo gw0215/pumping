@@ -7,7 +7,6 @@ import com.pumping.domain.emailverification.model.EmailVerification;
 import com.pumping.domain.emailverification.repository.EmailVerificationRepository;
 import com.pumping.domain.member.dto.EmailCodeCheckRequest;
 import com.pumping.domain.member.repository.MemberRepository;
-import com.pumping.global.auth.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -35,9 +34,6 @@ class EmailVerificationControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     MemberRepository memberRepository;

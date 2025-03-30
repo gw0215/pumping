@@ -6,7 +6,6 @@ import com.pumping.domain.comment.service.CommentService;
 import com.pumping.domain.member.model.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +19,7 @@ public class CommentController {
     @PostMapping("boards/{boardId}/comments")
     @ResponseStatus(HttpStatus.CREATED)
     public void save(
-            @AuthenticationPrincipal Member member,
+            @SessionAttribute("member") Member member,
             @PathVariable("boardId") Long boardId,
             @RequestBody CommentRequest commentRequest
     ) {
@@ -47,8 +46,9 @@ public class CommentController {
     @DeleteMapping("boards/{boardId}/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
+            @PathVariable("boardId") Long boardId,
             @PathVariable("commentId") Long commentId
     ) {
-        commentService.delete(commentId);
+        commentService.delete(boardId,commentId);
     }
 }

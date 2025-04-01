@@ -25,14 +25,12 @@ import java.util.Base64;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    @Value("${security.pbkdf2.iterations}")
-    private int iterations;
 
-    @Value("${security.pbkdf2.key-length}")
-    private int keyLength;
+    private static final Integer ITERATION = 65536;
 
-    @Value("${security.pbkdf2.algorithm}")
-    private String algorithm;
+    private static final Integer KEY_LENGTH = 256;
+
+    private static final String ALGORITHM = "PBKDF2WithHmacSHA256" ;
 
     @Transactional
     public Long save(MemberSignUpRequest memberSignUpRequest) {
@@ -42,8 +40,8 @@ public class MemberService {
         random.nextBytes(salt);
 
         try {
-            PBEKeySpec spec = new PBEKeySpec(memberSignUpRequest.getPassword().toCharArray(), salt, iterations, keyLength);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
+            PBEKeySpec spec = new PBEKeySpec(memberSignUpRequest.getPassword().toCharArray(), salt, ITERATION, KEY_LENGTH);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(ALGORITHM);
             byte[] hash = skf.generateSecret(spec).getEncoded();
             String encodedSalt = Base64.getEncoder().encodeToString(salt);
             String encodePassword = encodedSalt+"."+Base64.getEncoder().encodeToString(hash);
@@ -64,8 +62,8 @@ public class MemberService {
             byte[] salt = Base64.getDecoder().decode(parts[0]);
             byte[] storedHash = Base64.getDecoder().decode(parts[1]);
 
-            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, keyLength);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
+            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATION, KEY_LENGTH);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(ALGORITHM);
             byte[] computedHash = skf.generateSecret(spec).getEncoded();
 
             if (!MessageDigest.isEqual(storedHash, computedHash)) {

@@ -26,7 +26,7 @@ public class RoutineExercise {
 
     private Integer setOrder;
 
-    @OneToMany
+    @OneToMany(mappedBy = "routineExercise", cascade = CascadeType.ALL)
     private List<ExerciseSet> exerciseSets = new ArrayList<>();
 
     public RoutineExercise(Routine routine, Exercise exercise, Integer setOrder) {

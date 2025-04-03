@@ -57,7 +57,7 @@ public class RoutineDateService {
                 exerciseSetResponses.add(new ExerciseSetResponse(exerciseSet.getSetCount(), exerciseSet.getWeight(), exerciseSet.getCount()));
             }
 
-            new RoutineExerciseResponse(routineExercise.getExercise().getName(), exerciseSetResponses);
+            routineExerciseResponses.add(new RoutineExerciseResponse(routineExercise.getExercise().getName(), exerciseSetResponses));
         }
 
         return Optional.of(new RoutineDetailResponse(routine.getId(), routine.getName(), routineExerciseResponses));

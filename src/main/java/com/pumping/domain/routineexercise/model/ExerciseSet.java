@@ -18,14 +18,14 @@ public class ExerciseSet {
 
     private Integer weight;
 
-    private Integer count;
+    private Integer repetition;
 
     private Integer setCount;
 
-    public ExerciseSet(RoutineExercise routineExercise, Integer weight, Integer count, Integer setCount) {
+    public ExerciseSet(RoutineExercise routineExercise, Integer weight, Integer repetition, Integer setCount) {
         this.routineExercise = routineExercise;
         this.weight = weight;
-        this.count = count;
+        this.repetition = repetition;
         this.setCount = setCount;
     }
 }

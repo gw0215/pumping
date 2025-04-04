@@ -3,8 +3,10 @@ package com.pumping.domain.memo.model;
 import com.pumping.domain.exercise.model.Exercise;
 import com.pumping.domain.member.model.Member;
 import jakarta.persistence.*;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
 public class Memo {
 
     @Id

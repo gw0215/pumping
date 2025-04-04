@@ -1,6 +1,7 @@
 package com.pumping.domain.routineexercise.fixture;
 
 import com.pumping.domain.exercise.model.Exercise;
+import com.pumping.domain.routine.dto.ExerciseSetRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequests;
 import com.pumping.domain.routine.model.Routine;
@@ -16,13 +17,14 @@ public abstract class RoutineExerciseFixture {
         return new RoutineExercise(routine, exercise, 1);
     }
 
-    public static RoutineExerciseRequest createRoutineExerciseRequest(Long exerciseId) {
-        return new RoutineExerciseRequest(exerciseId, 20, 10, 5, 1);
+    public static RoutineExerciseRequest createRoutineExerciseRequest(Long exerciseId, List<ExerciseSetRequest> exerciseSetRequests) {
+        return new RoutineExerciseRequest(exerciseId, 1, exerciseSetRequests);
     }
 
-    public static List<RoutineExerciseRequest> createRoutineExerciseRequests(Long exerciseId, int count) {
+    public static List<RoutineExerciseRequest> createRoutineExerciseRequests(Long exerciseId, List<ExerciseSetRequest> exerciseSetRequests, int count) {
+
         return IntStream.range(0, count)
-                .mapToObj(i -> createRoutineExerciseRequest(exerciseId))
+                .mapToObj(i -> createRoutineExerciseRequest(exerciseId, exerciseSetRequests))
                 .collect(Collectors.toList());
     }
 

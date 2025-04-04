@@ -37,13 +37,15 @@ public class RoutineDateService {
 
     @Transactional
     public Optional<RoutineDetailResponse> findByMemberIdAndPerformedDate(Long memberId, LocalDate date) {
-        Optional<Routine> optionalRoutine =  routineRepository.findByMemberIdAndPerformedDate(memberId, date);
+        Optional<RoutineDate> optionalRoutineDate =  routineDateRepository.findByMemberIdAndPerformedDate(memberId, date);
 
-        if (optionalRoutine.isEmpty()) {
+        if (optionalRoutineDate.isEmpty()) {
             return Optional.empty();
         }
 
-        Routine routine = optionalRoutine.get();
+        RoutineDate routineDate = optionalRoutineDate.get();
+
+        Routine routine = routineDate.getRoutine();
 
         List<RoutineExercise> routineExercises = routine.getRoutineExercises();
         List<RoutineExerciseResponse> routineExerciseResponses = new ArrayList<>();
@@ -54,14 +56,19 @@ public class RoutineDateService {
             List<ExerciseSetResponse> exerciseSetResponses = new ArrayList<>();
 
             for (ExerciseSet exerciseSet : exerciseSets) {
-                exerciseSetResponses.add(new ExerciseSetResponse(exerciseSet.getSetCount(), exerciseSet.getWeight(), exerciseSet.getCount()));
+                exerciseSetResponses.add(new ExerciseSetResponse(exerciseSet.getSetCount(), exerciseSet.getWeight(), exerciseSet.getRepetition()));
             }
 
             routineExerciseResponses.add(new RoutineExerciseResponse(routineExercise.getExercise().getName(), exerciseSetResponses));
         }
 
-        return Optional.of(new RoutineDetailResponse(routine.getId(), routine.getName(), routineExerciseResponses));
+        return Optional.of(new RoutineDetailResponse(routine.getId(), routineDate.getId(), routine.getName(), routineExerciseResponses));
 
+    }
+
+    @Transactional
+    public void delete(Long routineDateId) {
+       routineDateRepository.deleteById(routineDateId);
     }
 
 }

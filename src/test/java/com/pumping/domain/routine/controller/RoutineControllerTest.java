@@ -7,11 +7,13 @@ import com.pumping.domain.exercise.repository.ExerciseRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
+import com.pumping.domain.routine.dto.ExerciseSetRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequests;
 import com.pumping.domain.routine.fixture.RoutineFixture;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
+import com.pumping.domain.routineexercise.fixture.ExerciseSetFixture;
 import com.pumping.domain.routineexercise.fixture.RoutineExerciseFixture;
 import com.pumping.domain.routineexercise.model.RoutineExercise;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,7 +77,9 @@ class RoutineControllerTest {
         Exercise exercise = ExerciseFixture.createExercise();
         exerciseRepository.save(exercise);
 
-        List<RoutineExerciseRequest> routineExerciseRequestList = RoutineExerciseFixture.createRoutineExerciseRequests(exercise.getId(), 5);
+        List<ExerciseSetRequest> exerciseSetRequests = ExerciseSetFixture.createExerciseSetRequests(3);
+
+        List<RoutineExerciseRequest> routineExerciseRequestList = RoutineExerciseFixture.createRoutineExerciseRequests(exercise.getId(), exerciseSetRequests, 5);
         RoutineExerciseRequests routineExerciseRequests = RoutineExerciseFixture.createRoutineExerciseRequests(routineExerciseRequestList);
 
         String json = objectMapper.writeValueAsString(routineExerciseRequests);

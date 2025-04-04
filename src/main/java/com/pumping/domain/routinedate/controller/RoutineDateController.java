@@ -37,4 +37,15 @@ public class RoutineDateController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
+
+    @DeleteMapping("/routines/{routineDateId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(
+            @PathVariable("routineDateId") Long routineDateId
+    ) {
+        routineDateService.delete(routineDateId);
+    }
+
+
+
 }

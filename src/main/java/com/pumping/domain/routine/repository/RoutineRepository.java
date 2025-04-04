@@ -13,8 +13,5 @@ public interface RoutineRepository extends JpaRepository<Routine, Long> {
 
     List<Routine> findAllByMemberId(@Param("memberId") Long memberId);
 
-    @Query("SELECT r FROM Routine r " +
-            "JOIN RoutineDate rd ON r.id = rd.routine.id " +
-            "WHERE r.member.id = :memberId AND rd.performedDate = :performedDate")
-    Optional<Routine> findByMemberIdAndPerformedDate(@Param("memberId") Long memberId, @Param("performedDate") LocalDate performedDate);
+
 }

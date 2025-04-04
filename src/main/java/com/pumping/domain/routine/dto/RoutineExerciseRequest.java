@@ -3,25 +3,21 @@ package com.pumping.domain.routine.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 public class RoutineExerciseRequest {
 
     private Long exerciseId;
 
-    private Integer weight;
-
-    private Integer count;
-
-    private Integer setCount;
-
     private Integer order;
 
-    public RoutineExerciseRequest(Long exerciseId, Integer weight, Integer count, Integer setCount, Integer order) {
+    private List<ExerciseSetRequest> exerciseSetRequests;
+
+    public RoutineExerciseRequest(Long exerciseId, Integer order, List<ExerciseSetRequest> exerciseSetRequests) {
         this.exerciseId = exerciseId;
-        this.weight = weight;
-        this.count = count;
-        this.setCount = setCount;
         this.order = order;
+        this.exerciseSetRequests = exerciseSetRequests;
     }
 }

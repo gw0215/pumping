@@ -3,10 +3,7 @@ package com.pumping.domain.routine.service;
 import com.pumping.domain.exercise.model.Exercise;
 import com.pumping.domain.exercise.repository.ExerciseRepository;
 import com.pumping.domain.member.model.Member;
-import com.pumping.domain.routine.dto.RoutineDetailResponse;
-import com.pumping.domain.routine.dto.RoutineExerciseRequest;
-import com.pumping.domain.routine.dto.RoutineExerciseRequests;
-import com.pumping.domain.routine.dto.RoutineResponse;
+import com.pumping.domain.routine.dto.*;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
 import com.pumping.domain.routineexercise.dto.ExerciseSetResponse;
@@ -37,7 +34,15 @@ public class RoutineService {
 
         for (RoutineExerciseRequest routineExerciseRequest : requests) {
             Exercise exercise = exerciseRepository.findById(routineExerciseRequest.getExerciseId()).orElseThrow(() -> new EntityNotFoundException("운동을 찾을 수 없습니다: 운동 ID : " + routineExerciseRequest.getExerciseId()));
-            routine.getRoutineExercises().add(new RoutineExercise(routine, exercise, routineExerciseRequest.getOrder()));
+            RoutineExercise routineExercise = new RoutineExercise(routine, exercise, routineExerciseRequest.getOrder());
+
+            List<ExerciseSetRequest> exerciseSetRequests = routineExerciseRequest.getExerciseSetRequests();
+
+            for (ExerciseSetRequest exerciseSetRequest : exerciseSetRequests) {
+                routineExercise.addExerciseSet(new ExerciseSet(routineExercise, exerciseSetRequest.getWeight(), exerciseSetRequest.getRepetition(), exerciseSetRequest.getSetCount()));
+            }
+
+            routine.addRoutineExercise(routineExercise);
         }
 
         routineRepository.save(routine);
@@ -56,13 +61,13 @@ public class RoutineService {
             List<ExerciseSetResponse> exerciseSetResponses = new ArrayList<>();
 
             for (ExerciseSet exerciseSet : exerciseSets) {
-                exerciseSetResponses.add(new ExerciseSetResponse(exerciseSet.getSetCount(), exerciseSet.getWeight(), exerciseSet.getCount()));
+                exerciseSetResponses.add(new ExerciseSetResponse(exerciseSet.getSetCount(), exerciseSet.getWeight(), exerciseSet.getRepetition()));
             }
 
-            new RoutineExerciseResponse(routineExercise.getExercise().getName(), exerciseSetResponses);
+            routineExerciseResponses.add(new RoutineExerciseResponse(routineExercise.getExercise().getName(), exerciseSetResponses));
         }
 
-        return new RoutineDetailResponse(routine.getId(), routine.getName(), routineExerciseResponses);
+        return new RoutineDetailResponse(routine.getId(), 0L, routine.getName(), routineExerciseResponses);
 
 
     }
@@ -81,6 +86,5 @@ public class RoutineService {
         return routineResponses;
 
     }
-
 
 }

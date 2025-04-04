@@ -4,5 +4,5 @@ import com.pumping.domain.routineexercise.dto.RoutineExerciseResponse;
 
 import java.util.List;
 
-public record RoutineDetailResponse(Long id, String name, List<RoutineExerciseResponse> exercises) {
+public record RoutineDetailResponse(Long routineId, Long routineDateId, String name, List<RoutineExerciseResponse> exercises) {
 }

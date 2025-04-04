@@ -31,4 +31,8 @@ public class Routine {
         this.name = name;
     }
 
+    public void addRoutineExercise(RoutineExercise routineExercise) {
+        routineExercises.add(routineExercise);
+    }
+
 }

@@ -60,7 +60,7 @@ public class MemberController {
             throw new IllegalStateException("Member not logged in");
         }
 
-        return new MemberResponse(member.getNickname(), member.getEmail());
+        return new MemberResponse(member.getNickname(), member.getEmail(), member.getProfileImagePath());
     }
 
     @DeleteMapping(value = "/members")
@@ -70,16 +70,6 @@ public class MemberController {
                     @SessionAttribute("member") Member member
             ) {
         memberService.delete(member.getId());
-    }
-
-
-    @GetMapping(value = "/members/profile-image")
-    @ResponseStatus(HttpStatus.OK)
-    public byte[] getProfileImage
-            (
-                    @SessionAttribute("member") Member member
-            ) {
-        return memberService.getProfileImage(member.getId());
     }
 
     @PatchMapping(value = "/members/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

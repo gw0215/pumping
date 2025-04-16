@@ -14,15 +14,21 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
+
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     private final MemberRepository memberRepository;
 
@@ -30,7 +36,7 @@ public class MemberService {
 
     private static final Integer KEY_LENGTH = 256;
 
-    private static final String ALGORITHM = "PBKDF2WithHmacSHA256" ;
+    private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
 
     @Transactional
     public Long save(MemberSignUpRequest memberSignUpRequest) {
@@ -44,8 +50,8 @@ public class MemberService {
             SecretKeyFactory skf = SecretKeyFactory.getInstance(ALGORITHM);
             byte[] hash = skf.generateSecret(spec).getEncoded();
             String encodedSalt = Base64.getEncoder().encodeToString(salt);
-            String encodePassword = encodedSalt+"."+Base64.getEncoder().encodeToString(hash);
-            Member member = new Member(memberSignUpRequest.getNickname(), memberSignUpRequest.getEmail(), encodePassword, loadDefaultProfileImage());
+            String encodePassword = encodedSalt + "." + Base64.getEncoder().encodeToString(hash);
+            Member member = new Member(memberSignUpRequest.getNickname(), memberSignUpRequest.getEmail(), encodePassword, "default_profile.jpg");
             Member saveMember = memberRepository.save(member);
             return saveMember.getId();
         } catch (Exception e) {
@@ -75,43 +81,30 @@ public class MemberService {
         }
     }
 
-
-    private byte[] loadDefaultProfileImage() {
-        try {
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("static/images/default_profile.jpg");
-            return (inputStream != null) ? inputStream.readAllBytes() : new byte[0];
-        } catch (IOException e) {
-            return new byte[0];
-        }
-    }
-
     @Transactional
     public void delete(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다. 회원 ID : " + memberId));
         member.deleteMember();
     }
 
-    @Transactional(readOnly = true)
-    public byte[] getProfileImage(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다. 회원 ID : " + memberId));
-        return member.getProfileImage();
-    }
-
     @Transactional
     public void updateProfileImage(Long memberId, MultipartFile file) {
-        Member member1 = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다. 회원 ID : " + memberId));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
 
-        byte[] data;
+        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        Path savePath = Paths.get(uploadDir, fileName);
+
         try {
-            data = file.getBytes();
-            member1.updateMemberProfileImage(data);
+            file.transferTo(savePath.toFile());
+            member.updateMemberProfileImage(fileName);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("프로필 이미지 저장 실패", e);
         }
     }
 
     @Transactional(readOnly = true)
-    public Member login (String email, String password) {
+    public Member login(String email, String password) {
         Member member = memberRepository.findByEmailAndDeletedFalse(email).orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다. 회원 이메일 : " + email));
 
         if (!verifyPassword(member, password)) {
@@ -120,7 +113,6 @@ public class MemberService {
 
         return member;
     }
-
 
 
 }

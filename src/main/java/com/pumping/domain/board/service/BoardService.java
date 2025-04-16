@@ -63,7 +63,7 @@ public class BoardService {
 
             boolean liked = !board.getFavoriteList().isEmpty();
 
-            boardResponses.add(new BoardResponse(board.getId(), board.member.getId(), board.member.getNickname(), board.getTitle(), board.getContent(), board.likeCount, board.commentCount, mediaResponses, liked));
+            boardResponses.add(new BoardResponse(board.getId(), board.member.getId(), board.member.getNickname(),board.member.getProfileImagePath(), board.getTitle(), board.getContent(), board.likeCount, board.commentCount, mediaResponses, liked));
         }
 
         return new PageImpl<>(boardResponses, pageable, boardPage.getTotalElements());

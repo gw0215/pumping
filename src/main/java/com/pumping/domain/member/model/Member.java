@@ -23,23 +23,22 @@ public class Member {
 
     private String password;
 
-    @Lob
-    private byte[] profileImage;
+    private String profileImagePath;
 
     private boolean deleted = false;
 
     @OneToMany(mappedBy = "member")
     private List<Routine> routines = new ArrayList<>();
 
-    public Member(String nickname, String email, String password, byte[] profileImage) {
+    public Member(String nickname, String email, String password, String profileImagePath) {
         this.nickname = nickname;
         this.email = email;
         this.password = password;
-        this.profileImage = profileImage;
+        this.profileImagePath = profileImagePath;
     }
 
-    public void updateMemberProfileImage(byte[] profileImage) {
-        this.profileImage = profileImage;
+    public void updateMemberProfileImage(String profileImagePath) {
+        this.profileImagePath = profileImagePath;
     }
 
     public void deleteMember() {

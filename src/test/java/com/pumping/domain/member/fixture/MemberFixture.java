@@ -9,10 +9,12 @@ public abstract class MemberFixture {
     public static final String NICKNAME = "its_woo";
     public static final String EMAIL = "email@fit.com";
     public static final String PASSWORD = "abc12345678@";
+    public static final String PROFILE_IMAGE_PATH = "imagepath";
+
     private static byte[] IMAGE = new byte[]{1, 2, 3, 4, 5};
 
     public static Member createMember() {
-        return new Member(NICKNAME, EMAIL, PASSWORD, IMAGE);
+        return new Member(NICKNAME, EMAIL, PASSWORD, PROFILE_IMAGE_PATH);
     }
 
     public static MemberSignUpRequest createMemberSignUpRequest() {

@@ -51,7 +51,7 @@ public class MemberService {
             byte[] hash = skf.generateSecret(spec).getEncoded();
             String encodedSalt = Base64.getEncoder().encodeToString(salt);
             String encodePassword = encodedSalt + "." + Base64.getEncoder().encodeToString(hash);
-            Member member = new Member(memberSignUpRequest.getNickname(), memberSignUpRequest.getEmail(), encodePassword, "default_profile.jpg");
+            Member member = new Member(memberSignUpRequest.getNickname(), memberSignUpRequest.getEmail(), encodePassword, "default_profile.png");
             Member saveMember = memberRepository.save(member);
             return saveMember.getId();
         } catch (Exception e) {

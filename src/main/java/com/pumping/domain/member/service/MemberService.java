@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -54,8 +56,8 @@ public class MemberService {
             Member member = new Member(memberSignUpRequest.getNickname(), memberSignUpRequest.getEmail(), encodePassword, "default_profile.png");
             Member saveMember = memberRepository.save(member);
             return saveMember.getId();
-        } catch (Exception e) {
-            throw new RuntimeException("Error hashing password", e);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException("비밀번호 암호화 실패", e);
         }
 
 

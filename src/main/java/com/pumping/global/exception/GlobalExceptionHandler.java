@@ -23,9 +23,9 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(IllegalAccessException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException e) {
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handlePasswordEncodingException(RuntimeException e) {
         return new ErrorResponse(e.getMessage());
     }
 }

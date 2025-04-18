@@ -10,4 +10,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByEmailAndDeletedFalse(@Param("email") String email);
 
+    boolean existsByEmailAndDeletedFalse(@Param("email") String email);
+
 }

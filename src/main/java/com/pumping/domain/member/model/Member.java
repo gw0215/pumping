@@ -17,8 +17,10 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String nickname;
 
+    @Column(unique = true)
     private String email;
 
     private String password;

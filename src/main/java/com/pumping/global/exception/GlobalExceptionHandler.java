@@ -1,6 +1,7 @@
 package com.pumping.global.exception;
 
 import com.pumping.domain.emailverification.exception.CodeVerificationException;
+import com.pumping.domain.member.exception.EmailAlreadyExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleEntityNotFoundException(EntityNotFoundException e) {
+        log.error("{}",e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleDuplicateEmail(EmailAlreadyExistsException e) {
         log.error("{}",e.getMessage());
         return new ErrorResponse(e.getMessage());
     }

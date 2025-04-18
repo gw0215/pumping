@@ -1,6 +1,7 @@
 package com.pumping.domain.member.service;
 
 import com.pumping.domain.member.dto.MemberSignUpRequest;
+import com.pumping.domain.member.exception.EmailAlreadyExistsException;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -60,7 +61,6 @@ public class MemberService {
             throw new RuntimeException("비밀번호 암호화 실패", e);
         }
 
-
     }
 
     public boolean verifyPassword(Member member, String password) {
@@ -102,6 +102,13 @@ public class MemberService {
             member.updateMemberProfileImage(fileName);
         } catch (IOException e) {
             throw new RuntimeException("프로필 이미지 저장 실패", e);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public void checkDuplicationEmail(String email) {
+        if (memberRepository.existsByEmailAndDeletedFalse(email)) {
+            throw new EmailAlreadyExistsException("가입한 이메일이 이미 존재합니다.");
         }
     }
 

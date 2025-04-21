@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,9 +44,18 @@ public class EmailVerificationService {
             throw new RuntimeException(e);
         }
 
-        EmailVerification emailVerification = new EmailVerification(email, code, LocalDateTime.now().plus(Duration.ofSeconds(CODE_DURATION)));
+        Optional<EmailVerification> optionalEmailVerification = emailVerificationRepository.findByEmail(email);
+        LocalDateTime time = LocalDateTime.now().plus(Duration.ofSeconds(CODE_DURATION));
 
-        emailVerificationRepository.save(emailVerification);
+        if (optionalEmailVerification.isEmpty()) {
+            EmailVerification emailVerification = new EmailVerification(email, code, time);
+            emailVerificationRepository.save(emailVerification);
+        } else {
+            EmailVerification emailVerification = optionalEmailVerification.get();
+            emailVerification.updateCode(code);
+            emailVerification.updateExpiredAt(time);
+        }
+
 
     }
 
@@ -58,7 +68,7 @@ public class EmailVerificationService {
 
         LocalDateTime expiresAt = emailVerification.getExpiresAt();
 
-        if (LocalDateTime.now().isAfter(expiresAt)){
+        if (LocalDateTime.now().isAfter(expiresAt)) {
             throw new CodeVerificationException("인증 코드가 만료되었습니다.");
         }
 

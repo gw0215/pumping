@@ -1,17 +1,16 @@
-package com.pumping.domain.routinedate.controller;
+package com.pumping.domain.performedroutine.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pumping.domain.exercise.repository.ExerciseRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
 import com.pumping.domain.routine.fixture.RoutineFixture;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
-import com.pumping.domain.routinedate.dto.RoutineDateRequest;
-import com.pumping.domain.routinedate.fixture.RoutineDateFixture;
-import com.pumping.domain.routinedate.model.RoutineDate;
-import com.pumping.domain.routinedate.repository.RoutineDateRepository;
+import com.pumping.domain.performedroutine.dto.PerformedRoutineRequest;
+import com.pumping.domain.performedroutine.fixture.RoutineDateFixture;
+import com.pumping.domain.performedroutine.model.PerformedRoutine;
+import com.pumping.domain.performedroutine.repository.PerformedRoutineRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -19,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mock.web.MockHttpSession;
@@ -35,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class RoutineDateControllerTest {
+class PerformedRoutineControllerTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -50,7 +48,7 @@ class RoutineDateControllerTest {
     RoutineRepository routineRepository;
 
     @Autowired
-    RoutineDateRepository routineDateRepository;
+    PerformedRoutineRepository performedRoutineRepository;
 
     @MockitoBean
     JavaMailSender javaMailSender;
@@ -71,9 +69,9 @@ class RoutineDateControllerTest {
         Routine routine = RoutineFixture.createRoutine(member);
         routineRepository.save(routine);
 
-        RoutineDateRequest routineDateRequest = RoutineDateFixture.createRoutineDateRequest(routine.getId());
+        PerformedRoutineRequest performedRoutineRequest = RoutineDateFixture.createRoutineDateRequest(routine.getId());
 
-        String json = objectMapper.writeValueAsString(routineDateRequest);
+        String json = objectMapper.writeValueAsString(performedRoutineRequest);
 
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
@@ -95,15 +93,15 @@ class RoutineDateControllerTest {
         Routine routine = RoutineFixture.createRoutine(member);
         routineRepository.save(routine);
 
-        RoutineDate routineDate = RoutineDateFixture.createRoutineDate(routine);
-        routineDateRepository.save(routineDate);
+        PerformedRoutine performedRoutine = RoutineDateFixture.createRoutineDate(routine);
+        performedRoutineRepository.save(performedRoutine);
 
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
         mockMvc.perform(get("/routine-date")
                         .session(session)
-                        .param("routineDate", routineDate.getPerformedDate().toString())
+                        .param("routineDate", performedRoutine.getPerformedDate().toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());

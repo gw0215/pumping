@@ -27,7 +27,7 @@ public class EmailVerificationService {
     private final JavaMailSender javaMailSender;
 
     @Transactional
-    public void sendCodeEmail(String email) {
+    public void sendCode(String email) {
 
         String code = RandomCodeGenerator.generateCode();
 

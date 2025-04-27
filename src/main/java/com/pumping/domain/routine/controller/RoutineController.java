@@ -19,7 +19,7 @@ public class RoutineController {
 
     @PostMapping("/routines")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createRoutine(
+    public void create(
             @SessionAttribute("member") Member member,
             @RequestBody RoutineExerciseRequests routineExerciseRequests
     ) {
@@ -28,7 +28,7 @@ public class RoutineController {
 
     @GetMapping("/routines")
     @ResponseStatus(HttpStatus.OK)
-    public List<RoutineResponse> findAllRoutines(
+    public List<RoutineResponse> findAll(
             @SessionAttribute("member") Member member
     ) {
         return routineService.findAll(member.getId());

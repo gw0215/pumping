@@ -19,7 +19,7 @@ public class ExerciseController {
 
     @GetMapping(value = "/exercises")
     @ResponseStatus(HttpStatus.OK)
-    public List<ExerciseResponse> findAllExercises(
+    public List<ExerciseResponse> findAll(
             @RequestParam(value = "part", required = false) String part
     ) {
         return exerciseService.findAll(part);

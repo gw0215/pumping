@@ -67,7 +67,7 @@ public class MemberController {
 
     @GetMapping("/verify-email")
     @ResponseStatus(HttpStatus.OK)
-    public void duplicateEmail(@RequestParam(value = "email") String email) {
+    public void checkDuplicationEmail(@RequestParam(value = "email") String email) {
         memberService.checkDuplicationEmail(email);
     }
 

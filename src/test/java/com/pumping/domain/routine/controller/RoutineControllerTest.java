@@ -7,7 +7,7 @@ import com.pumping.domain.exercise.repository.ExerciseRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
-import com.pumping.domain.routine.dto.ExerciseSetRequest;
+import com.pumping.domain.routineexercise.dto.ExerciseSetRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequests;
 import com.pumping.domain.routine.fixture.RoutineFixture;

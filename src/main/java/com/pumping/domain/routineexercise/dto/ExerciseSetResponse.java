@@ -1,4 +1,4 @@
 package com.pumping.domain.routineexercise.dto;
 
-public record ExerciseSetResponse(Integer setCount, Integer weight, Integer repetition) {
+public record ExerciseSetResponse(Integer setCount, Float weight, Integer repetition) {
 }

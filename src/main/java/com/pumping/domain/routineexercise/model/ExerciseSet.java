@@ -16,13 +16,13 @@ public class ExerciseSet {
     @ManyToOne(fetch = FetchType.LAZY)
     public RoutineExercise routineExercise;
 
-    private Integer weight;
+    private Float weight;
 
     private Integer repetition;
 
     private Integer setCount;
 
-    public ExerciseSet(RoutineExercise routineExercise, Integer weight, Integer repetition, Integer setCount) {
+    public ExerciseSet(RoutineExercise routineExercise, Float weight, Integer repetition, Integer setCount) {
         this.routineExercise = routineExercise;
         this.weight = weight;
         this.repetition = repetition;

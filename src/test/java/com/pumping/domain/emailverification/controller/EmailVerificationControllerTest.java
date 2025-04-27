@@ -53,7 +53,7 @@ class EmailVerificationControllerTest {
 
         String email = "email@fit.com";
 
-        mockMvc.perform(get("/email")
+        mockMvc.perform(get("/emails")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("email", email))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
@@ -70,7 +70,7 @@ class EmailVerificationControllerTest {
         EmailCodeCheckRequest emailCodeCheckRequest = EmailVerificationFixture.createEmailCodeCheckRequest();
         String json = objectMapper.writeValueAsString(emailCodeCheckRequest);
 
-        mockMvc.perform(post("/email")
+        mockMvc.perform(post("/emails")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(MockMvcResultMatchers.status().isNoContent())

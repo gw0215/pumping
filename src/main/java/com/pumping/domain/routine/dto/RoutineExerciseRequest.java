@@ -1,5 +1,6 @@
 package com.pumping.domain.routine.dto;
 
+import com.pumping.domain.routineexercise.dto.ExerciseSetRequest;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

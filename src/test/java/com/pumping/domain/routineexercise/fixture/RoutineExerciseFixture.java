@@ -1,7 +1,7 @@
 package com.pumping.domain.routineexercise.fixture;
 
 import com.pumping.domain.exercise.model.Exercise;
-import com.pumping.domain.routine.dto.ExerciseSetRequest;
+import com.pumping.domain.routineexercise.dto.ExerciseSetRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequests;
 import com.pumping.domain.routine.model.Routine;

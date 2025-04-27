@@ -1,6 +1,6 @@
 package com.pumping.domain.routineexercise.fixture;
 
-import com.pumping.domain.routine.dto.ExerciseSetRequest;
+import com.pumping.domain.routineexercise.dto.ExerciseSetRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 
 public abstract class ExerciseSetFixture {
 
-    public static final Integer WEIGHT = 5;
+    public static final Float WEIGHT = 5f;
 
     public static final Integer REPETITION = 10;
 

@@ -50,7 +50,7 @@ public class BoardController {
 
     @DeleteMapping(value = "/boards/{boardId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(
+    public void deleteById(
             @PathVariable("boardId") Long boardId
     ) {
         boardService.deleteById(boardId);

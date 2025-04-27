@@ -1,4 +1,4 @@
-package com.pumping.domain.performedroutine.controller;
+package com.pumping.domain.exercisehistory.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pumping.domain.member.fixture.MemberFixture;
@@ -7,10 +7,10 @@ import com.pumping.domain.member.repository.MemberRepository;
 import com.pumping.domain.routine.fixture.RoutineFixture;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
-import com.pumping.domain.performedroutine.dto.PerformedRoutineRequest;
-import com.pumping.domain.performedroutine.fixture.RoutineDateFixture;
-import com.pumping.domain.performedroutine.model.PerformedRoutine;
-import com.pumping.domain.performedroutine.repository.PerformedRoutineRepository;
+import com.pumping.domain.exercisehistory.dto.ExerciseHistoryRequest;
+import com.pumping.domain.exercisehistory.fixture.RoutineDateFixture;
+import com.pumping.domain.exercisehistory.model.ExerciseHistory;
+import com.pumping.domain.exercisehistory.repository.ExerciseHistoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class PerformedRoutineControllerTest {
+class exerciseHistoryControllerTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -48,7 +48,7 @@ class PerformedRoutineControllerTest {
     RoutineRepository routineRepository;
 
     @Autowired
-    PerformedRoutineRepository performedRoutineRepository;
+    ExerciseHistoryRepository exerciseHistoryRepository;
 
     @MockitoBean
     JavaMailSender javaMailSender;
@@ -69,14 +69,14 @@ class PerformedRoutineControllerTest {
         Routine routine = RoutineFixture.createRoutine(member);
         routineRepository.save(routine);
 
-        PerformedRoutineRequest performedRoutineRequest = RoutineDateFixture.createRoutineDateRequest(routine.getId());
+        ExerciseHistoryRequest exerciseHistoryRequest = RoutineDateFixture.createRoutineDateRequest(routine.getId());
 
-        String json = objectMapper.writeValueAsString(performedRoutineRequest);
+        String json = objectMapper.writeValueAsString(exerciseHistoryRequest);
 
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
-        mockMvc.perform(post("/routine-date")
+        mockMvc.perform(post("/exercise-history")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -93,15 +93,15 @@ class PerformedRoutineControllerTest {
         Routine routine = RoutineFixture.createRoutine(member);
         routineRepository.save(routine);
 
-        PerformedRoutine performedRoutine = RoutineDateFixture.createRoutineDate(routine);
-        performedRoutineRepository.save(performedRoutine);
+        ExerciseHistory exerciseHistory = RoutineDateFixture.createRoutineDate(member, routine);
+        exerciseHistoryRepository.save(exerciseHistory);
 
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
-        mockMvc.perform(get("/routine-date")
+        mockMvc.perform(get("/exercise-history")
                         .session(session)
-                        .param("routineDate", performedRoutine.getPerformedDate().toString())
+                        .param("performedDate", exerciseHistory.getPerformedDate().toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());

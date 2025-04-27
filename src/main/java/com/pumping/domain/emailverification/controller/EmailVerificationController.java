@@ -13,18 +13,18 @@ public class EmailVerificationController {
     private final EmailVerificationService emailVerificationService;
 
 
-    @GetMapping(value = "/email")
+    @GetMapping(value = "/emails")
     @ResponseStatus(HttpStatus.CREATED)
-    public void sendEmail
+    public void sendCode
             (
                     @RequestParam("email") String email
             ) {
-        emailVerificationService.sendCodeEmail(email);
+        emailVerificationService.sendCode(email);
     }
 
-    @PostMapping(value = "/email")
+    @PostMapping(value = "/emails")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void checkEmailCode
+    public void checkCode
             (
                     @RequestBody EmailCodeCheckRequest emailCodeCheckRequest
             ) {

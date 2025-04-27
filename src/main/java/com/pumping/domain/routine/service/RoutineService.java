@@ -6,6 +6,7 @@ import com.pumping.domain.member.model.Member;
 import com.pumping.domain.routine.dto.*;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
+import com.pumping.domain.routineexercise.dto.ExerciseSetRequest;
 import com.pumping.domain.routineexercise.dto.ExerciseSetResponse;
 import com.pumping.domain.routineexercise.dto.RoutineExerciseResponse;
 import com.pumping.domain.routineexercise.model.ExerciseSet;
@@ -64,7 +65,7 @@ public class RoutineService {
                 exerciseSetResponses.add(new ExerciseSetResponse(exerciseSet.getSetCount(), exerciseSet.getWeight(), exerciseSet.getRepetition()));
             }
 
-            routineExerciseResponses.add(new RoutineExerciseResponse(routineExercise.getExercise().getName(), exerciseSetResponses));
+            routineExerciseResponses.add(new RoutineExerciseResponse(routineExercise.getExercise().getId(), routineExercise.getExercise().getName(), exerciseSetResponses));
         }
 
         return new RoutineDetailResponse(routine.getId(), 0L, routine.getName(), routineExerciseResponses);

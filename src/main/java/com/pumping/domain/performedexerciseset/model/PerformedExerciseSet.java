@@ -1,6 +1,7 @@
 package com.pumping.domain.performedexerciseset.model;
 
-import com.pumping.domain.performedroutine.model.PerformedRoutine;
+import com.pumping.domain.exercise.model.Exercise;
+import com.pumping.domain.exercisehistory.model.ExerciseHistory;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,21 +16,25 @@ public class PerformedExerciseSet {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    public PerformedRoutine performedRoutine;
+    public ExerciseHistory exerciseHistory;
 
-    private Integer weight;
+    @ManyToOne
+    public Exercise exercise;
+
+    private Float weight;
 
     private Integer repetition;
 
     private Integer setCount;
 
-    private Boolean completed;
+    private Boolean checked;
 
-    public PerformedExerciseSet(PerformedRoutine performedRoutine, Integer weight, Integer repetition, Integer setCount, Boolean completed) {
-        this.performedRoutine = performedRoutine;
+    public PerformedExerciseSet(ExerciseHistory exerciseHistory, Exercise exercise, Float weight, Integer repetition, Integer setCount, Boolean checked) {
+        this.exerciseHistory = exerciseHistory;
+        this.exercise = exercise;
         this.weight = weight;
         this.repetition = repetition;
         this.setCount = setCount;
-        this.completed = completed;
+        this.checked = checked;
     }
 }

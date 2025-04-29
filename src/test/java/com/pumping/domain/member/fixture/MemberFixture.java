@@ -1,5 +1,6 @@
 package com.pumping.domain.member.fixture;
 
+import com.pumping.domain.member.dto.LoginRequest;
 import com.pumping.domain.member.dto.MemberSignUpRequest;
 import com.pumping.domain.member.dto.VerifyPasswordRequest;
 import com.pumping.domain.member.model.Member;
@@ -25,4 +26,11 @@ public abstract class MemberFixture {
         return new VerifyPasswordRequest(PASSWORD);
     }
 
+    public static LoginRequest createLoginRequest() {
+        return new LoginRequest(EMAIL, PASSWORD);
+    }
+
+    public static VerifyPasswordRequest createVerifyPasswordRequest() {
+        return new VerifyPasswordRequest(PASSWORD);
+    }
 }

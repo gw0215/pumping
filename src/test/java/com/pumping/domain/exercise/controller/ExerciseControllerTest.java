@@ -1,6 +1,5 @@
 package com.pumping.domain.exercise.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pumping.domain.exercise.fixture.ExerciseFixture;
 import com.pumping.domain.exercise.model.Exercise;
 import com.pumping.domain.exercise.repository.ExerciseRepository;
@@ -34,9 +33,6 @@ class ExerciseControllerTest {
 
     @Autowired
     MockMvc mockMvc;
-
-    @Autowired
-    ObjectMapper objectMapper;
 
     @Autowired
     ExerciseRepository exerciseRepository;

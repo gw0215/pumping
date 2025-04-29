@@ -45,10 +45,9 @@ public class ExerciseHistoryController {
     @GetMapping("/exercise-history/{exerciseHistoryId}")
     public ResponseEntity<ExerciseHistoryResponse> findById(
             @SessionAttribute("member") Member member,
-            @PathVariable("routineDateId") Long routineDateId,
-            @RequestParam("routineId") Long routineId
+            @PathVariable("exerciseHistoryId") Long exerciseHistoryId
     ) {
-        ExerciseHistoryResponse exerciseHistoryResponse = exerciseHistoryService.findById(routineDateId,routineId);
+        ExerciseHistoryResponse exerciseHistoryResponse = exerciseHistoryService.findById(exerciseHistoryId);
         return ResponseEntity.ok(exerciseHistoryResponse);
     }
 
@@ -80,6 +79,7 @@ public class ExerciseHistoryController {
     }
 
     @PatchMapping("/exercise-history/{exerciseHistoryId}/end")
+    @ResponseStatus(HttpStatus.OK)
     public void endExerciseHistory(
             @PathVariable("exerciseHistoryId") Long exerciseHistoryId,
             @RequestParam("endTime") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime) {

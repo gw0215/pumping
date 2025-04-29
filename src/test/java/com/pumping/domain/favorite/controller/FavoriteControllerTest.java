@@ -1,6 +1,5 @@
 package com.pumping.domain.favorite.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pumping.domain.board.fixture.BoardFixture;
 import com.pumping.domain.board.model.Board;
 import com.pumping.domain.board.repository.BoardRepository;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mock.web.MockHttpSession;
@@ -41,18 +39,16 @@ class FavoriteControllerTest {
     @Autowired
     MemberRepository memberRepository;
 
-    @MockitoBean
-    JavaMailSender javaMailSender;
-
     @Autowired
     BoardRepository boardRepository;
 
     @Autowired
     FavoriteRepository favoriteRepository;
 
-    Member member;
+    @MockitoBean
+    JavaMailSender javaMailSender;
 
-    String token;
+    Member member;
 
     @BeforeEach
     void setUp() {

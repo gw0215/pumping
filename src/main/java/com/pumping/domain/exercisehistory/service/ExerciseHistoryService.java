@@ -131,10 +131,10 @@ public class ExerciseHistoryService {
     }
 
     @Transactional
-    public ExerciseHistoryResponse findById(Long performedRoutineId, Long routineId) {
+    public ExerciseHistoryResponse findById(Long performedRoutineId) {
         ExerciseHistory exerciseHistory = exerciseHistoryRepository.findById(performedRoutineId).orElseThrow(() -> new EntityNotFoundException("루틴 수행 기록을 찾을 수 없습니다. 기록 ID : " + performedRoutineId));
 
-        Routine routine = routineRepository.findById(routineId).orElseThrow(() -> new EntityNotFoundException("루틴을 찾을 수 없습니다. 루틴 ID : " + routineId));
+        Routine routine = exerciseHistory.getRoutine();
 
         List<RoutineExercise> routineExercises = routine.getRoutineExercises();
         List<RoutineExerciseResponse> routineExerciseResponses = new ArrayList<>();

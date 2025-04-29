@@ -1,16 +1,13 @@
-package com.pumping.domain.exercisehistory.controller;
+package com.pumping.domain.inbody.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pumping.domain.inbody.dto.InBodyRequest;
+import com.pumping.domain.inbody.fixture.InBodyFixture;
+import com.pumping.domain.inbody.model.InBody;
+import com.pumping.domain.inbody.repository.InBodyRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
-import com.pumping.domain.routine.fixture.RoutineFixture;
-import com.pumping.domain.routine.model.Routine;
-import com.pumping.domain.routine.repository.RoutineRepository;
-import com.pumping.domain.exercisehistory.dto.ExerciseHistoryRequest;
-import com.pumping.domain.exercisehistory.fixture.RoutineDateFixture;
-import com.pumping.domain.exercisehistory.model.ExerciseHistory;
-import com.pumping.domain.exercisehistory.repository.ExerciseHistoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -27,31 +24,30 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class exerciseHistoryControllerTest {
+class InBodyControllerTest {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
     MemberRepository memberRepository;
-
-    @Autowired
-    RoutineRepository routineRepository;
-
-    @Autowired
-    ExerciseHistoryRepository exerciseHistoryRepository;
 
     @MockitoBean
     JavaMailSender javaMailSender;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @Autowired
+    InBodyRepository inBodyRepository;
 
     Member member;
 
@@ -61,26 +57,21 @@ class exerciseHistoryControllerTest {
         memberRepository.save(member);
     }
 
-
     @Test
     @Transactional
-    void 루틴_날짜_저장_API_성공() throws Exception {
+    void 인바디_저장_API_성공() throws Exception {
 
-        Routine routine = RoutineFixture.createRoutine(member);
-        routineRepository.save(routine);
+        InBodyRequest inBodyRequest = InBodyFixture.createInBodyRequest();
 
-        ExerciseHistoryRequest exerciseHistoryRequest = RoutineDateFixture.createRoutineDateRequest(routine.getId());
-
-        String json = objectMapper.writeValueAsString(exerciseHistoryRequest);
+        String json = objectMapper.writeValueAsString(inBodyRequest);
 
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
-        mockMvc.perform(post("/exercise-history")
+        mockMvc.perform(post("/inbody")
                         .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(json))
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andDo(MockMvcResultHandlers.print());
 
@@ -88,23 +79,38 @@ class exerciseHistoryControllerTest {
 
     @Test
     @Transactional
-    void 루틴_날짜_조회_API_성공() throws Exception {
-
-        Routine routine = RoutineFixture.createRoutine(member);
-        routineRepository.save(routine);
-
-        ExerciseHistory exerciseHistory = RoutineDateFixture.createRoutineDate(member, routine);
-        exerciseHistoryRepository.save(exerciseHistory);
+    void 최근_인바디_조회_API_성공() throws Exception {
 
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
-        mockMvc.perform(get("/exercise-history")
+        InBody inbody = InBodyFixture.createInbody(member);
+        inBodyRepository.save(inbody);
+
+        mockMvc.perform(get("/inbody/recent")
                         .session(session)
-                        .param("performedDate", exerciseHistory.getPerformedDate().toString())
-                        .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
 
     }
+
+    @Test
+    @Transactional
+    void 인바디_날짜_조회_API_성공() throws Exception {
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
+        mockMvc.perform(get("/inbody")
+                        .session(session)
+                        .param("from", LocalDate.now().minusDays(3L).toString())
+                        .param("to", LocalDate.now().plusDays(3L).toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+
 }

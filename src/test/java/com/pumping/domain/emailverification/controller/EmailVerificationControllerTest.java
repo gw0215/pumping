@@ -1,12 +1,10 @@
 package com.pumping.domain.emailverification.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pumping.domain.board.repository.BoardRepository;
 import com.pumping.domain.emailverification.fixture.EmailVerificationFixture;
 import com.pumping.domain.emailverification.model.EmailVerification;
 import com.pumping.domain.emailverification.repository.EmailVerificationRepository;
 import com.pumping.domain.member.dto.EmailCodeCheckRequest;
-import com.pumping.domain.member.repository.MemberRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -36,16 +34,10 @@ class EmailVerificationControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    MemberRepository memberRepository;
+    EmailVerificationRepository emailVerificationRepository;
 
     @MockitoBean
     JavaMailSender javaMailSender;
-
-    @Autowired
-    BoardRepository boardRepository;
-
-    @Autowired
-    EmailVerificationRepository emailVerificationRepository;
 
     @Test
     @Transactional

@@ -1,7 +1,7 @@
 package com.pumping.domain.exercisehistory.model;
 
 import com.pumping.domain.member.model.Member;
-import com.pumping.domain.performedexerciseset.model.PerformedExerciseSet;
+import com.pumping.domain.performedexercise.model.PerformedExercise;
 import com.pumping.domain.routine.model.Routine;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -33,8 +33,8 @@ public class ExerciseHistory {
 
     private LocalDate performedDate;
 
-    @OneToMany(mappedBy = "exerciseHistory",cascade = CascadeType.ALL)
-    private List<PerformedExerciseSet> performedExerciseSets = new ArrayList<>();
+    @OneToMany(mappedBy = "exerciseHistory",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<PerformedExercise> performedExercises = new ArrayList<>();
 
     public ExerciseHistory(Member member, Routine routine, LocalTime performedTime, ExerciseHistoryStatus exerciseHistoryStatus, LocalDate performedDate) {
         this.member = member;
@@ -52,12 +52,12 @@ public class ExerciseHistory {
         this.performedTime = performedTime;
     }
 
-    public void addPerformedExerciseSet(PerformedExerciseSet performedExerciseSet) {
-        performedExerciseSets.add(performedExerciseSet);
+    public void addPerformedExercise(PerformedExercise performedExercise) {
+        performedExercises.add(performedExercise);
     }
 
     public void clearPerformedExerciseSet() {
-        performedExerciseSets.clear();
+        performedExercises.clear();
     }
 
 }

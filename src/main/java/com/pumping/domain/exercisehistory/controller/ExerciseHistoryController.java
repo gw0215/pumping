@@ -42,15 +42,6 @@ public class ExerciseHistoryController {
         exerciseHistoryService.update(exerciseHistoryId, exerciseHistoryUpdateRequest);
     }
 
-    @GetMapping("/exercise-history/{exerciseHistoryId}")
-    public ResponseEntity<ExerciseHistoryResponse> findById(
-            @SessionAttribute("member") Member member,
-            @PathVariable("exerciseHistoryId") Long exerciseHistoryId
-    ) {
-        ExerciseHistoryResponse exerciseHistoryResponse = exerciseHistoryService.findById(exerciseHistoryId);
-        return ResponseEntity.ok(exerciseHistoryResponse);
-    }
-
     @GetMapping("/exercise-history")
     public ResponseEntity<ExerciseHistoryResponse> findByMemberIdAndPerformedDate(
             @SessionAttribute("member") Member member,

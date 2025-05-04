@@ -24,15 +24,15 @@ public class RoutineExercise {
     @ManyToOne(fetch = FetchType.LAZY)
     private Exercise exercise;
 
-    private Integer setOrder;
+    private Integer exerciseOrder;
 
     @OneToMany(mappedBy = "routineExercise", cascade = CascadeType.ALL)
     private List<ExerciseSet> exerciseSets = new ArrayList<>();
 
-    public RoutineExercise(Routine routine, Exercise exercise, Integer setOrder) {
+    public RoutineExercise(Routine routine, Exercise exercise, Integer exerciseOrder) {
         this.routine = routine;
         this.exercise = exercise;
-        this.setOrder = setOrder;
+        this.exerciseOrder = exerciseOrder;
     }
 
     public void addExerciseSet(ExerciseSet exerciseSet) {

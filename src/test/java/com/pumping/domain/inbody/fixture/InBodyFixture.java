@@ -24,4 +24,8 @@ public abstract class InBodyFixture {
         return new InBody(member, WEIGHT, SMM, BFM, DATE);
     }
 
+    public static InBody createInbody(Member member,LocalDate date) {
+        return new InBody(member, WEIGHT, SMM, BFM, date);
+    }
+
 }

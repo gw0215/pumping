@@ -56,6 +56,10 @@ public class Board {
         mediaList.add(media);
     }
 
+    public void addFavorite(Favorite favorite) {
+        favoriteList.add(favorite);
+    }
+
     public void plusLikeCount() {
         this.likeCount++;
     }

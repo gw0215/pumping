@@ -43,6 +43,10 @@ public abstract class ExerciseHistoryFixture {
         return new ExerciseHistory(member, routine, LOCAL_TIME, ExerciseHistoryStatus.IN_PROGRESS, DATE);
     }
 
+    public static ExerciseHistory createExerciseHistory(Member member, Routine routine, LocalDate date) {
+        return new ExerciseHistory(member, routine, LOCAL_TIME, ExerciseHistoryStatus.IN_PROGRESS, date);
+    }
+
     public static ExerciseHistoryUpdateRequest createExerciseHistoryUpdateRequest(List<PerformedExerciseSetRequest> addedSets,List<PerformedExerciseSetRequest> updatedSets,List<Long> deletedSetIds,List<PerformedExerciseRequest> newExercises) {
         return new ExerciseHistoryUpdateRequest(addedSets,updatedSets,newExercises,deletedSetIds);
     }

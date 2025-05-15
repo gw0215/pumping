@@ -2,6 +2,7 @@ package com.pumping.domain.exercise.repository;
 
 import com.pumping.domain.exercise.fixture.ExerciseFixture;
 import com.pumping.domain.exercise.model.Exercise;
+import com.pumping.domain.exercise.model.ExercisePart;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -26,11 +27,11 @@ class ExerciseRepositoryTest {
         List<Exercise> exerciseList = ExerciseFixture.createExercises(5);
         exerciseRepository.saveAll(exerciseList);
 
-        String part = exerciseList.get(0).getPart();
-        List<Exercise> exercises = exerciseRepository.findAllByPart(part);
+        ExercisePart exercisePart = exerciseList.get(0).getExercisePart();
+        List<Exercise> exercises = exerciseRepository.findAllByExercisePart(exercisePart);
 
         Assertions.assertThat(exercises).hasSize(5);
-        exercises.forEach(exercise -> Assertions.assertThat(exercise.getPart()).isEqualTo(part));
+        exercises.forEach(exercise -> Assertions.assertThat(exercise.getExercisePart()).isEqualTo(exercisePart));
     }
 
 }

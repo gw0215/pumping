@@ -3,8 +3,10 @@ package com.pumping.domain.exercisehistory.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pumping.domain.exercise.fixture.ExerciseFixture;
 import com.pumping.domain.exercise.model.Exercise;
+import com.pumping.domain.exercise.model.ExercisePart;
 import com.pumping.domain.exercise.repository.ExerciseRepository;
 import com.pumping.domain.exercisehistory.dto.ExerciseHistoryUpdateRequest;
+import com.pumping.domain.exercisehistory.model.ExerciseHistoryStatus;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
@@ -37,6 +39,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -124,22 +127,19 @@ class ExerciseHistoryControllerTest {
         routineRepository.save(routine);
 
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
-        exerciseHistoryRepository.save(exerciseHistory);
-
         PerformedExercise performedExercise1 = ExerciseHistoryFixture.createPerformedExercise(exerciseHistory, exercise1);
-        performedExerciseRepository.save(performedExercise1);
-
         PerformedExercise performedExercise2 = ExerciseHistoryFixture.createPerformedExercise(exerciseHistory, exercise2);
-        performedExerciseRepository.save(performedExercise2);
-
         PerformedExerciseSet performedExerciseSet1 = ExerciseHistoryFixture.createPerformedExerciseSet(performedExercise1);
-        performedExerciseSetRepository.save(performedExerciseSet1);
-
         PerformedExerciseSet performedExerciseSet2 = ExerciseHistoryFixture.createPerformedExerciseSet(performedExercise1);
-        performedExerciseSetRepository.save(performedExerciseSet2);
-
         PerformedExerciseSet performedExerciseSet3 = ExerciseHistoryFixture.createPerformedExerciseSet(performedExercise2);
-        performedExerciseSetRepository.save(performedExerciseSet3);
+
+        performedExercise1.addPerformedExerciseSet(performedExerciseSet1);
+        performedExercise2.addPerformedExerciseSet(performedExerciseSet2);
+        performedExercise2.addPerformedExerciseSet(performedExerciseSet3);
+
+        exerciseHistory.addPerformedExercise(performedExercise1);
+        exerciseHistory.addPerformedExercise(performedExercise2);
+        exerciseHistoryRepository.save(exerciseHistory);
 
         List<PerformedExerciseSetRequest> addSets = ExerciseHistoryFixture.createPerformedExerciseSetRequests(3, 0L, performedExercise1.getId());
         List<PerformedExerciseSetRequest> updateSets = ExerciseHistoryFixture.createPerformedExerciseSetRequests(3, performedExerciseSet1.getId(), performedExercise1.getId());
@@ -246,4 +246,102 @@ class ExerciseHistoryControllerTest {
                 .andDo(MockMvcResultHandlers.print());
 
     }
+
+    @Test
+    @Transactional
+    void 세트_체크_API_성공() throws Exception {
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member));
+        Exercise exercise = exerciseRepository.save(ExerciseFixture.createExercise());
+
+        ExerciseHistory exerciseHistory = exerciseHistoryRepository.save(ExerciseHistoryFixture.createExerciseHistory(member, routine));
+        PerformedExercise performedExercise = performedExerciseRepository.save(ExerciseHistoryFixture.createPerformedExercise(exerciseHistory, exercise));
+        PerformedExerciseSet performedExerciseSet = performedExerciseSetRepository.save(ExerciseHistoryFixture.createPerformedExerciseSet(performedExercise));
+
+        mockMvc.perform(patch("/performed-exercise-set/{performedExerciseSetId}", performedExerciseSet.getId()))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    @Transactional
+    void 주간_운동_부위별_세트수_조회_API_성공() throws Exception {
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member));
+        Exercise exercise = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST));
+
+        LocalDate performedDate = LocalDate.now().minusDays(2);
+        ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine, performedDate, ExerciseHistoryStatus.COMPLETED);
+        PerformedExercise performedExercise = ExerciseHistoryFixture.createPerformedExercise(exerciseHistory, exercise);
+        PerformedExerciseSet performedExerciseSet = ExerciseHistoryFixture.createPerformedExerciseSet(performedExercise, 2f,2, true);
+        performedExercise.addPerformedExerciseSet(performedExerciseSet);
+        exerciseHistory.addPerformedExercise(performedExercise);
+        exerciseHistoryRepository.save(exerciseHistory);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
+        mockMvc.perform(get("/exercise-history/exercise-part-analyze")
+                        .session(session))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    @Transactional
+    void 이번달과_지난달_운동량_비교_API_성공() throws Exception {
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member));
+        Exercise exercise = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.BACK));
+
+        LocalDate lastMonthDate = LocalDate.now().minusMonths(1).withDayOfMonth(10);
+        ExerciseHistory lastMonthHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine, lastMonthDate, ExerciseHistoryStatus.COMPLETED);
+        PerformedExercise lastMonthExercise = ExerciseHistoryFixture.createPerformedExercise(lastMonthHistory, exercise);
+        PerformedExerciseSet performedExerciseSet1 = ExerciseHistoryFixture.createPerformedExerciseSet(lastMonthExercise, 3f,3,true);
+        lastMonthHistory.addPerformedExercise(lastMonthExercise);
+        lastMonthExercise.addPerformedExerciseSet(performedExerciseSet1);
+        exerciseHistoryRepository.save(lastMonthHistory);
+
+        LocalDate thisMonthDate = LocalDate.now().withDayOfMonth(10);
+        ExerciseHistory thisMonthHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine, thisMonthDate, ExerciseHistoryStatus.COMPLETED);
+        PerformedExercise thisMonthExercise = ExerciseHistoryFixture.createPerformedExercise(thisMonthHistory, exercise);
+        PerformedExerciseSet performedExerciseSet2 = ExerciseHistoryFixture.createPerformedExerciseSet(thisMonthExercise, 4f,4,true);
+        thisMonthHistory.addPerformedExercise(thisMonthExercise);
+        thisMonthExercise.addPerformedExerciseSet(performedExerciseSet2);
+        exerciseHistoryRepository.save(thisMonthHistory);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
+        mockMvc.perform(get("/exercise-history/last-month-compare")
+                        .session(session))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    @Transactional
+    void 운동_세트_체크_API_성공() throws Exception {
+        Routine routine = RoutineFixture.createRoutine(member);
+        routineRepository.save(routine);
+
+        Exercise exercise = ExerciseFixture.createExercise();
+        exerciseRepository.save(exercise);
+
+        ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
+        PerformedExercise performedExercise = ExerciseHistoryFixture.createPerformedExercise(exerciseHistory, exercise);
+        PerformedExerciseSet performedExerciseSet = ExerciseHistoryFixture.createPerformedExerciseSet(performedExercise);
+
+        exerciseHistory.addPerformedExercise(performedExercise);
+        performedExercise.addPerformedExerciseSet(performedExerciseSet);
+
+        exerciseHistoryRepository.save(exerciseHistory);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
+        mockMvc.perform(patch("/performed-exercise-set/{performedExerciseSetId}", performedExerciseSet.getId())
+                        .session(session)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
 }

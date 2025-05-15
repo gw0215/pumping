@@ -29,6 +29,7 @@ public class ExerciseHistory {
 
     private LocalTime performedTime;
 
+    @Enumerated(EnumType.STRING)
     private ExerciseHistoryStatus exerciseHistoryStatus;
 
     private LocalDate performedDate;

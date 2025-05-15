@@ -1,13 +1,12 @@
 package com.pumping.domain.exercisehistory.service;
 
 import com.pumping.domain.exercise.model.Exercise;
+import com.pumping.domain.exercise.model.ExercisePart;
 import com.pumping.domain.exercise.repository.ExerciseRepository;
-import com.pumping.domain.exercisehistory.dto.ExerciseHistoryResponse;
-import com.pumping.domain.exercisehistory.dto.ExerciseHistoryUpdateRequest;
-import com.pumping.domain.exercisehistory.dto.ExerciseHistoryWeekStatusResponse;
+import com.pumping.domain.exercisehistory.dto.*;
 import com.pumping.domain.exercisehistory.model.ExerciseHistory;
 import com.pumping.domain.exercisehistory.model.ExerciseHistoryStatus;
-import com.pumping.domain.exercisehistory.repository.ExerciseHistoryRepository;
+import com.pumping.domain.exercisehistory.repository.*;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.performedexercise.dto.PerformedExerciseRequest;
 import com.pumping.domain.performedexercise.dto.PerformedExerciseResponse;
@@ -15,6 +14,7 @@ import com.pumping.domain.performedexercise.dto.PerformedExerciseSetRequest;
 import com.pumping.domain.performedexercise.dto.PerformedExerciseSetResponse;
 import com.pumping.domain.performedexercise.model.PerformedExercise;
 import com.pumping.domain.performedexercise.model.PerformedExerciseSet;
+import com.pumping.domain.performedexercise.repository.PerformedExerciseSetRepository;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
 import com.pumping.domain.routineexercise.model.ExerciseSet;
@@ -27,15 +27,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class ExerciseHistoryService {
 
     private final ExerciseHistoryRepository exerciseHistoryRepository;
+
+    private final PerformedExerciseSetRepository performedExerciseSetRepository;
 
     private final RoutineRepository routineRepository;
 
@@ -144,59 +144,49 @@ public class ExerciseHistoryService {
         }
     }
 
-
     @Transactional
     public ExerciseHistoryWeekStatusResponse weekStatus(Member member) {
-
         LocalDate monday = LocalDate.now().with(DayOfWeek.MONDAY);
         LocalDate sunday = monday.plusDays(6);
 
-        List<ExerciseHistory> exerciseHistoryList = exerciseHistoryRepository.findByMemberAndPerformedDateBetween(member, monday, sunday);
+        List<WeeklyExerciseHistoryStatsDto> weeklyExerciseHistoryStatsDtos = exerciseHistoryRepository.findWeeklyStats(member.getId(), monday, sunday);
 
-        long totalSeconds = 0;
-        float totalVolume = 0;
+        Map<LocalDate, WeeklyExerciseHistoryStatsDto> statsByDate = new HashMap<>();
+        for (WeeklyExerciseHistoryStatsDto weeklyExerciseHistoryStatsDto : weeklyExerciseHistoryStatsDtos) {
+            statsByDate.put(weeklyExerciseHistoryStatsDto.getPerformedDate(), weeklyExerciseHistoryStatsDto);
+        }
 
         List<Long> totalSecondsPerDay = new ArrayList<>();
         List<Float> totalVolumePerDay = new ArrayList<>();
 
+        long totalSeconds = 0;
+        float totalVolume = 0f;
+
         for (int i = 0; i < 7; i++) {
-            totalSecondsPerDay.add(0L);
-            totalVolumePerDay.add(0f);
-        }
+            LocalDate localDate = monday.plusDays(i);
+            WeeklyExerciseHistoryStatsDto weeklyExerciseHistoryStatsDto = statsByDate.get(localDate);
 
-        for (ExerciseHistory exerciseHistory : exerciseHistoryList) {
-            LocalDate performedDate = exerciseHistory.getPerformedDate();
+            long seconds = 0L;
+            float volume = 0f;
 
-            if (exerciseHistory.getExerciseHistoryStatus().equals(ExerciseHistoryStatus.COMPLETED)) {
-
-                int dayOfWeek = performedDate.getDayOfWeek().getValue() - 1;
-
-
-                long routineSeconds = exerciseHistory.getPerformedTime().toSecondOfDay();
-                float routineVolume = 0f;
-
-                for (PerformedExercise performedExercise : exerciseHistory.getPerformedExercises()) {
-                    List<PerformedExerciseSet> performedExerciseSets = performedExercise.getPerformedExerciseSets();
-
-                    for (PerformedExerciseSet performedExerciseSet : performedExerciseSets) {
-                        if (performedExerciseSet.getCompleted()) {
-                            routineVolume = performedExerciseSet.getWeight();
-                        }
-                    }
-
+            if (weeklyExerciseHistoryStatsDto != null) {
+                if (weeklyExerciseHistoryStatsDto.getTotalSeconds() != null) {
+                    seconds = weeklyExerciseHistoryStatsDto.getTotalSeconds();
                 }
-
-                totalSeconds += routineSeconds;
-                totalVolume += routineVolume;
-
-                totalSecondsPerDay.set(dayOfWeek, totalSecondsPerDay.get(dayOfWeek) + routineSeconds);
-                totalVolumePerDay.set(dayOfWeek, totalVolumePerDay.get(dayOfWeek) + routineVolume);
+                if (weeklyExerciseHistoryStatsDto.getTotalVolume() != null) {
+                    volume = weeklyExerciseHistoryStatsDto.getTotalVolume();
+                }
             }
+
+            totalSecondsPerDay.add(seconds);
+            totalVolumePerDay.add(volume);
+
+            totalSeconds += seconds;
+            totalVolume += volume;
         }
 
         return new ExerciseHistoryWeekStatusResponse(totalSeconds, totalVolume, totalSecondsPerDay, totalVolumePerDay);
     }
-
 
     @Transactional
     public void endExerciseHistory(Long performedRoutineId, LocalTime performedTime) {
@@ -241,5 +231,77 @@ public class ExerciseHistoryService {
     public void delete(Long routineDateId) {
         exerciseHistoryRepository.deleteById(routineDateId);
     }
+
+    @Transactional
+    public void checkSet(Long performedExerciseSetId) {
+        PerformedExerciseSet performedExerciseSet = performedExerciseSetRepository.findById(performedExerciseSetId).orElseThrow(() -> new EntityNotFoundException("루틴 수행 기록 세트 정보를 찾을 수 없습니다. ID: " + performedExerciseSetId));
+
+        performedExerciseSet.updateCompleted(!performedExerciseSet.getCompleted());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ExercisePartSetCountDto> getWeeklySetCountByExercisePart(Long memberId) {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(6);
+
+        List<ExercisePartSetCountDto> exercisePartSetCountDtos = exerciseHistoryRepository.countSetPerExercisePart(memberId, startDate, endDate);
+
+        List<ExercisePartSetCountDto> response = new ArrayList<>();
+
+        for (ExercisePart exercisePart : ExercisePart.values()) {
+            Long setCount = 0L;
+
+            for (ExercisePartSetCountDto exercisePartSetCountDto : exercisePartSetCountDtos) {
+                if (exercisePart.equals(exercisePartSetCountDto.getExercisePart())) {
+                    setCount = exercisePartSetCountDto.getSetCount();
+                    break;
+                }
+            }
+
+            response.add(new ExercisePartSetCountDto(exercisePart, setCount));
+        }
+
+        return response;
+    }
+
+    @Transactional
+    public List<PartVolumeComparisonDto> compareThisMonthAndLastMonthVolume(Long memberId) {
+        LocalDate now = LocalDate.now();
+
+        LocalDate thisMonthStart = now.withDayOfMonth(1);
+        LocalDate thisMonthEnd = now.withDayOfMonth(now.lengthOfMonth());
+
+        LocalDate lastMonthStart = now.minusMonths(1).withDayOfMonth(1);
+        LocalDate lastMonthEnd = now.minusMonths(1).withDayOfMonth(now.minusMonths(1).lengthOfMonth());
+
+        List<MonthlyPartVolumeDto> thisMonthData = exerciseHistoryRepository.findMonthlyVolumeByPart(memberId, thisMonthStart, thisMonthEnd);
+        List<MonthlyPartVolumeDto> lastMonthData = exerciseHistoryRepository.findMonthlyVolumeByPart(memberId, lastMonthStart, lastMonthEnd);
+
+        List<PartVolumeComparisonDto> result = new ArrayList<>();
+
+        for (ExercisePart part : ExercisePart.values()) {
+            double thisMonthVolume = 0.0;
+            double lastMonthVolume = 0.0;
+
+            for (MonthlyPartVolumeDto monthlyPartVolumeDto : thisMonthData) {
+                if (monthlyPartVolumeDto.getPart() == part) {
+                    thisMonthVolume = monthlyPartVolumeDto.getTotalVolume();
+                    break;
+                }
+            }
+
+            for (MonthlyPartVolumeDto monthlyPartVolumeDto : lastMonthData) {
+                if (monthlyPartVolumeDto.getPart() == part) {
+                    lastMonthVolume = monthlyPartVolumeDto.getTotalVolume();
+                    break;
+                }
+            }
+
+            result.add(new PartVolumeComparisonDto(part, thisMonthVolume, lastMonthVolume));
+        }
+
+        return result;
+    }
+
 
 }

@@ -1,10 +1,7 @@
 package com.pumping.domain.exercisehistory.controller;
 
+import com.pumping.domain.exercisehistory.dto.*;
 import com.pumping.domain.member.model.Member;
-import com.pumping.domain.exercisehistory.dto.ExerciseHistoryResponse;
-import com.pumping.domain.exercisehistory.dto.ExerciseHistoryRequest;
-import com.pumping.domain.exercisehistory.dto.ExerciseHistoryUpdateRequest;
-import com.pumping.domain.exercisehistory.dto.ExerciseHistoryWeekStatusResponse;
 import com.pumping.domain.exercisehistory.service.ExerciseHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -75,5 +73,27 @@ public class ExerciseHistoryController {
             @PathVariable("exerciseHistoryId") Long exerciseHistoryId,
             @RequestParam("endTime") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime) {
         exerciseHistoryService.endExerciseHistory(exerciseHistoryId, endTime);
+    }
+
+    @PatchMapping("/performed-exercise-set/{performedExerciseSetId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void checkSet(
+            @PathVariable("performedExerciseSetId") Long performedExerciseSetId) {
+        exerciseHistoryService.checkSet(performedExerciseSetId);
+    }
+
+    @GetMapping("/exercise-history/exercise-part-analyze")
+    public ResponseEntity< List<ExercisePartSetCountDto>> getWeeklyExerciseSetCount(
+            @SessionAttribute("member") Member member
+    ) {
+        List<ExercisePartSetCountDto> weeklySetCountByExercisePart = exerciseHistoryService.getWeeklySetCountByExercisePart(member.getId());
+        return ResponseEntity.ok(weeklySetCountByExercisePart);
+    }
+
+    @GetMapping("/exercise-history/last-month-compare")
+    public ResponseEntity<List<PartVolumeComparisonDto>> compareMonthlyVolume(
+            @SessionAttribute("member") Member member) {
+        List<PartVolumeComparisonDto> result = exerciseHistoryService.compareThisMonthAndLastMonthVolume(member.getId());
+        return ResponseEntity.ok(result);
     }
 }

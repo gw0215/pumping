@@ -21,15 +21,16 @@ public class Exercise {
 
     private String explanation;
 
-    private String part;
+    @Enumerated(EnumType.STRING)
+    private ExercisePart exercisePart;
 
     @OneToMany(mappedBy = "exercise")
     private List<RoutineExercise> routineExercise = new ArrayList<>();
 
-    public Exercise(String name, String explanation, String part) {
+    public Exercise(String name, String explanation, ExercisePart exercisePart) {
         this.name = name;
         this.explanation = explanation;
-        this.part = part;
+        this.exercisePart = exercisePart;
     }
 
     

@@ -3,6 +3,7 @@ package com.pumping.domain.board.service;
 import com.pumping.domain.board.dto.BoardResponse;
 import com.pumping.domain.board.model.Board;
 import com.pumping.domain.board.repository.BoardRepository;
+import com.pumping.domain.favorite.model.Favorite;
 import com.pumping.domain.media.dto.MediaResponse;
 import com.pumping.domain.media.model.Media;
 import com.pumping.domain.member.model.Member;
@@ -38,7 +39,7 @@ public class BoardService {
             try {
                 data = file.getBytes();
             } catch (IOException e) {
-                throw new UncheckedIOException("파일을 읽는 중 오류 발생: " + file.getOriginalFilename(),e);
+                throw new UncheckedIOException("파일을 읽는 중 오류 발생: " + file.getOriginalFilename(), e);
             }
             Media media = new Media(board, file.getOriginalFilename(), file.getContentType(), data);
             board.addMedia(media);
@@ -49,8 +50,7 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public Page<BoardResponse> findAll(Member member, Pageable pageable) {
-
-        Page<Board> boardPage = boardRepository.findBoardsWithFavoritesByMember(member, pageable);
+        Page<Board> boardPage = boardRepository.findBoardsWithFavoritesByMember(pageable);
 
         List<BoardResponse> boardResponses = new ArrayList<>();
 
@@ -61,9 +61,16 @@ public class BoardService {
                 mediaResponses.add(new MediaResponse(media.getId(), media.getFileName(), media.getFileType()));
             }
 
-            boolean liked = !board.getFavoriteList().isEmpty();
+            boolean liked = false;
 
-            boardResponses.add(new BoardResponse(board.getId(), board.member.getId(), board.member.getNickname(),board.member.getProfileImagePath(), board.getTitle(), board.getContent(), board.likeCount, board.commentCount, mediaResponses, liked));
+            for (Favorite favorite : board.getFavoriteList()) {
+                if (favorite.getMember().getId().equals(member.getId())) {
+                    liked = true;
+                    break;
+                }
+            }
+
+            boardResponses.add(new BoardResponse(board.getId(), board.getMember().getId(), board.getMember().getNickname(), board.getMember().getProfileImagePath(), board.getTitle(), board.getContent(), board.getLikeCount(), board.getCommentCount(), mediaResponses, liked));
         }
 
         return new PageImpl<>(boardResponses, pageable, boardPage.getTotalElements());
@@ -71,7 +78,7 @@ public class BoardService {
 
 
     @Transactional
-    public void update(Member member,Long boardId, String title, String content) {
+    public void update(Long boardId, String title, String content) {
         Board board = boardRepository.findById(boardId).orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. 게시글 ID : " + boardId));
         board.updateTitle(title);
         board.updateContent(content);

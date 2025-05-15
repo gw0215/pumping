@@ -63,6 +63,7 @@ class ExerciseControllerTest {
         session.setAttribute("member", member);
 
         mockMvc.perform(get("/exercises")
+                        .param("part", "CHEST")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))

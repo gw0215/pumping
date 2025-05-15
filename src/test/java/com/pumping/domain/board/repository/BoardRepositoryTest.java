@@ -42,7 +42,7 @@ class BoardRepositoryTest {
 
         Pageable pageable = PageRequest.of(0, 20);
 
-        Page<Board> result = boardRepository.findBoardsWithFavoritesByMember(member, pageable);
+        Page<Board> result = boardRepository.findBoardsWithFavoritesByMember(pageable);
 
         Assertions.assertThat(result.getContent()).hasSize(3);
         Assertions.assertThat(result.getContent().get(0).getFavoriteList().get(0)).isNotNull();

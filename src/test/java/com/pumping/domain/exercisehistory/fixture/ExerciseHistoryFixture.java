@@ -47,6 +47,14 @@ public abstract class ExerciseHistoryFixture {
         return new ExerciseHistory(member, routine, LOCAL_TIME, ExerciseHistoryStatus.IN_PROGRESS, date);
     }
 
+    public static ExerciseHistory createExerciseHistory(Member member, Routine routine, LocalDate date,ExerciseHistoryStatus exerciseHistoryStatus) {
+        return new ExerciseHistory(member, routine, LOCAL_TIME, exerciseHistoryStatus, date);
+    }
+
+    public static ExerciseHistory createExerciseHistory(Member member, Routine routine,LocalTime localTime, LocalDate date,ExerciseHistoryStatus exerciseHistoryStatus) {
+        return new ExerciseHistory(member, routine,localTime, exerciseHistoryStatus, date);
+    }
+
     public static ExerciseHistoryUpdateRequest createExerciseHistoryUpdateRequest(List<PerformedExerciseSetRequest> addedSets,List<PerformedExerciseSetRequest> updatedSets,List<Long> deletedSetIds,List<PerformedExerciseRequest> newExercises) {
         return new ExerciseHistoryUpdateRequest(addedSets,updatedSets,newExercises,deletedSetIds);
     }
@@ -63,8 +71,26 @@ public abstract class ExerciseHistoryFixture {
         return new PerformedExercise(exerciseHistory,exercise,SET_ORDER);
     }
 
+
+
     public static PerformedExerciseSet createPerformedExerciseSet(PerformedExercise performedExercise) {
         return new PerformedExerciseSet(performedExercise, WEIGHT, REPETITION, SET_COUNT, COMPLETED);
+    }
+
+    public static PerformedExerciseSet createPerformedExerciseSet(PerformedExercise performedExercise, Float weight) {
+        return new PerformedExerciseSet(performedExercise, weight, REPETITION, SET_COUNT, COMPLETED);
+    }
+
+    public static PerformedExerciseSet createPerformedExerciseSet(PerformedExercise performedExercise, Float weight, Integer setCount, Boolean completed) {
+        return new PerformedExerciseSet(performedExercise, weight, REPETITION, setCount, completed);
+    }
+
+    public static PerformedExerciseSet createPerformedExerciseSet(PerformedExercise performedExercise, Float weight, Integer repetition) {
+        return new PerformedExerciseSet(performedExercise, weight, repetition, SET_COUNT, COMPLETED);
+    }
+
+    public static PerformedExerciseSet createPerformedExerciseSet(PerformedExercise pe, Float weight, Integer repetition, Integer setCount) {
+        return new PerformedExerciseSet(pe, weight, repetition, setCount, true);
     }
 
     public static List<PerformedExerciseSet> createPerformedExerciseSet(int count,PerformedExercise performedExercise) {
@@ -78,6 +104,5 @@ public abstract class ExerciseHistoryFixture {
     public static List<PerformedExerciseRequest> createPerformedExerciseRequests(int count,Long exerciseId, List<PerformedExerciseSetRequest> performedExerciseSetRequests) {
         return IntStream.range(0, count).mapToObj(i -> createPerformedExerciseRequest(exerciseId, performedExerciseSetRequests)).toList();
     }
-
 
 }

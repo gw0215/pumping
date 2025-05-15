@@ -45,7 +45,7 @@ public class BoardController {
             @PathVariable("boardId") Long boardId,
             @RequestBody BoardRequest boardRequest
     ) {
-        boardService.update(member, boardId, boardRequest.getTitle(), boardRequest.getContent());
+        boardService.update(boardId, boardRequest.getTitle(), boardRequest.getContent());
     }
 
     @DeleteMapping(value = "/boards/{boardId}")

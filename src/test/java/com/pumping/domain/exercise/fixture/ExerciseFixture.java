@@ -20,6 +20,9 @@ public abstract class ExerciseFixture {
     public static Exercise createExercise(ExercisePart exercisePart) {
         return new Exercise(NAME, EXPLAIN, exercisePart);
     }
+    public static Exercise createExercise(ExercisePart exercisePart, String name) {
+        return new Exercise(name, EXPLAIN, exercisePart);
+    }
 
     public static List<Exercise> createExercises(int count) {
         return IntStream.range(0, count)

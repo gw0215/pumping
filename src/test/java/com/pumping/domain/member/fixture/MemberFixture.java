@@ -7,10 +7,10 @@ import com.pumping.domain.member.model.Member;
 
 public abstract class MemberFixture {
 
-    public static final String NICKNAME = "its_woo";
-    public static final String EMAIL = "email@fit.com";
-    public static final String PASSWORD = "abc12345678@";
-    public static final String PROFILE_IMAGE_PATH = "imagepath";
+    public static final String NICKNAME = "its_woo1111";
+    public static final String EMAIL = "email@pumping.com1111";
+    public static final String PASSWORD = "abc12345678@1111";
+    public static final String PROFILE_IMAGE_PATH = "imagepath1111";
 
     private static byte[] IMAGE = new byte[]{1, 2, 3, 4, 5};
 

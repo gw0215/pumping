@@ -56,9 +56,29 @@ public interface ExerciseHistoryRepository extends JpaRepository<ExerciseHistory
                 WHERE eh.member.id = :memberId
                     AND eh.exerciseHistoryStatus = 'COMPLETED'
                     AND pes.completed = true
-                    AND eh.performedDate BETWEEN :start AND :end
-                GROUP BY  e.exercisePart, FUNCTION('MONTH', eh.performedDate)
-                ORDER BY e.exercisePart, FUNCTION('MONTH', eh.performedDate)
+                    AND eh.performedDate BETWEEN :startDate AND :endDate
+                GROUP BY  e.exercisePart
             """)
-    List<MonthlyPartVolumeDto> findMonthlyVolumeByPart(@Param("memberId") Long memberId, @Param("start") LocalDate start, @Param("end") LocalDate end);
+    List<MonthlyPartVolumeDto> findMonthlyVolumeByPart(@Param("memberId") Long memberId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query(value = """
+            SELECT part, exercise_id, exercise_name, cnt
+            FROM (
+               SELECT e.exercise_part   AS part,
+                      e.id              AS exercise_id,
+                      e.name            AS exercise_name,
+                      COUNT(pe.id)      AS cnt,
+                      ROW_NUMBER() OVER (PARTITION BY e.exercise_part
+                                         ORDER BY COUNT(pe.id) DESC) AS rn
+               FROM performed_exercise pe
+               JOIN exercise e ON pe.exercise_id = e.id
+               JOIN exercise_history eh ON pe.exercise_history_id = eh.id
+               WHERE eh.performed_date BETWEEN :startDate AND :endDate
+                 AND eh.exercise_history_status = 'COMPLETED'
+               GROUP BY e.exercise_part, e.id, e.name
+            ) sub
+            WHERE rn <= 5
+            ORDER BY part, cnt DESC
+            """, nativeQuery = true)
+    List<TopExerciseDto> findTop5ByPart(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

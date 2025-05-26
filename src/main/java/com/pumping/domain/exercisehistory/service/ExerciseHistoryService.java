@@ -303,5 +303,19 @@ public class ExerciseHistoryService {
         return result;
     }
 
+    @Transactional(readOnly = true)
+    public TopExerciseResponse getTop5ExercisesByPart(LocalDate startDate, LocalDate endDate) {
 
+        List<TopExerciseDto> raw = exerciseHistoryRepository.findTop5ByPart(startDate, endDate);
+
+        return new TopExerciseResponse(
+                raw.stream().filter(d -> d.getPart() == ExercisePart.CHEST).toList(),
+                raw.stream().filter(d -> d.getPart() == ExercisePart.BACK).toList(),
+                raw.stream().filter(d -> d.getPart() == ExercisePart.SHOULDERS).toList(),
+                raw.stream().filter(d -> d.getPart() == ExercisePart.ARMS).toList(),
+                raw.stream().filter(d -> d.getPart() == ExercisePart.CORE).toList(),
+                raw.stream().filter(d -> d.getPart() == ExercisePart.LEGS).toList(),
+                raw.stream().filter(d -> d.getPart() == ExercisePart.HIP).toList()
+        );
+    }
 }

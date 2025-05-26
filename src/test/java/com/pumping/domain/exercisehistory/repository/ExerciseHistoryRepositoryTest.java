@@ -174,7 +174,6 @@ class ExerciseHistoryRepositoryTest {
         float weight2 = 20f;
         int reps2 = 5;
         int sets2 = 2;
-        double expectedVolumeLastMonth = weight2 * reps2 * sets2;
 
         Member member = memberRepository.save(MemberFixture.createMember());
         Routine routine = routineRepository.save(RoutineFixture.createRoutine(member));
@@ -195,14 +194,112 @@ class ExerciseHistoryRepositoryTest {
 
         exerciseHistoryRepository.saveAll(List.of(exerciseHistory1, exerciseHistory2));
 
-        List<MonthlyPartVolumeDto> volumes = exerciseHistoryRepository.findMonthlyVolumeByPart(member.getId(), lastMonthDate.minusDays(1), thisMonthDate.plusDays(1));
+        List<MonthlyPartVolumeDto> volumes = exerciseHistoryRepository.findMonthlyVolumeByPart(member.getId(), thisMonthDate.withDayOfMonth(1), thisMonthDate.withDayOfMonth(thisMonthDate.lengthOfMonth()));
 
-        Assertions.assertThat(volumes).hasSize(2);
+        Assertions.assertThat(volumes).hasSize(1);
 
-        Map<Integer, Double> monthToVolume = volumes.stream().collect(Collectors.toMap(MonthlyPartVolumeDto::getMonth, MonthlyPartVolumeDto::getTotalVolume));
+        MonthlyPartVolumeDto dto = volumes.get(0);
+        Assertions.assertThat(dto.getPart()).isEqualTo(ExercisePart.LEGS);
+        Assertions.assertThat(dto.getTotalVolume()).isEqualTo(expectedVolumeThisMonth);
+    }
 
-        Assertions.assertThat(monthToVolume.get(lastMonthDate.getMonthValue())).isEqualTo(expectedVolumeLastMonth);
-        Assertions.assertThat(monthToVolume.get(thisMonthDate.getMonthValue())).isEqualTo(expectedVolumeThisMonth);
+
+    @Test
+    void 운동부위별_TOP5_운동명_조회() {
+
+        Member member  = memberRepository.save(MemberFixture.createMember());
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member));
+
+        Exercise chest1 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST, "벤치프레스"));
+        Exercise chest2 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST, "딥스"));
+        Exercise chest3 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST, "체스트 플라이"));
+        Exercise chest4 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST, "푸시업"));
+
+        Exercise back1 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.BACK, "랫풀다운"));
+        Exercise back2 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.BACK, "바벨로우"));
+
+        LocalDate today = LocalDate.now();
+
+        for (int i = 0; i < 3; i++) {
+            ExerciseHistory eh = exerciseHistoryRepository.save(
+                    ExerciseHistoryFixture.createExerciseHistory(
+                            member, routine, today.minusDays(i), ExerciseHistoryStatus.COMPLETED));
+
+            PerformedExercise pe = ExerciseHistoryFixture.createPerformedExercise(eh, chest1);
+            pe.addPerformedExerciseSet(ExerciseHistoryFixture.createPerformedExerciseSet(pe));
+            eh.addPerformedExercise(pe);
+        }
+
+        for (int i = 0; i < 2; i++) {
+            ExerciseHistory eh = exerciseHistoryRepository.save(
+                    ExerciseHistoryFixture.createExerciseHistory(
+                            member, routine, today.minusDays(3 + i), ExerciseHistoryStatus.COMPLETED));
+
+            PerformedExercise pe = ExerciseHistoryFixture.createPerformedExercise(eh, chest2);
+            pe.addPerformedExerciseSet(ExerciseHistoryFixture.createPerformedExerciseSet(pe));
+            eh.addPerformedExercise(pe);
+        }
+
+        ExerciseHistory ehChest3 = exerciseHistoryRepository.save(
+                ExerciseHistoryFixture.createExerciseHistory(
+                        member, routine, today.minusDays(5), ExerciseHistoryStatus.COMPLETED));
+        PerformedExercise peChest3 = ExerciseHistoryFixture.createPerformedExercise(ehChest3, chest3);
+        peChest3.addPerformedExerciseSet(ExerciseHistoryFixture.createPerformedExerciseSet(peChest3));
+        ehChest3.addPerformedExercise(peChest3);
+
+        ExerciseHistory ehChest4 = exerciseHistoryRepository.save(
+                ExerciseHistoryFixture.createExerciseHistory(
+                        member, routine, today.minusDays(6), ExerciseHistoryStatus.COMPLETED));
+        PerformedExercise peChest4 = ExerciseHistoryFixture.createPerformedExercise(ehChest4, chest4);
+        peChest4.addPerformedExerciseSet(ExerciseHistoryFixture.createPerformedExerciseSet(peChest4));
+        ehChest4.addPerformedExercise(peChest4);
+
+        for (int i = 0; i < 2; i++) {
+            ExerciseHistory eh = exerciseHistoryRepository.save(
+                    ExerciseHistoryFixture.createExerciseHistory(
+                            member, routine, today.minusDays(7 + i), ExerciseHistoryStatus.COMPLETED));
+
+            PerformedExercise pe = ExerciseHistoryFixture.createPerformedExercise(eh, back1);
+            pe.addPerformedExerciseSet(ExerciseHistoryFixture.createPerformedExerciseSet(pe));
+            eh.addPerformedExercise(pe);
+        }
+
+        ExerciseHistory ehBack2 = exerciseHistoryRepository.save(
+                ExerciseHistoryFixture.createExerciseHistory(
+                        member, routine, today.minusDays(9), ExerciseHistoryStatus.COMPLETED));
+        PerformedExercise peBack2 = ExerciseHistoryFixture.createPerformedExercise(ehBack2, back2);
+        peBack2.addPerformedExerciseSet(ExerciseHistoryFixture.createPerformedExerciseSet(peBack2));
+        ehBack2.addPerformedExercise(peBack2);
+
+        List<TopExerciseDto> result = exerciseHistoryRepository.findTop5ByPart(
+                today.minusDays(10), today.plusDays(1));
+
+        Assertions.assertThat(result).hasSize(6);
+
+        Assertions.assertThat(result.get(0).getPart()).isEqualTo(ExercisePart.BACK);
+        Assertions.assertThat(result.get(1).getPart()).isEqualTo(ExercisePart.BACK);
+        Assertions.assertThat(result.get(2).getPart()).isEqualTo(ExercisePart.CHEST);
+        Assertions.assertThat(result.get(3).getPart()).isEqualTo(ExercisePart.CHEST);
+        Assertions.assertThat(result.get(4).getPart()).isEqualTo(ExercisePart.CHEST);
+        Assertions.assertThat(result.get(5).getPart()).isEqualTo(ExercisePart.CHEST);
+
+        Assertions.assertThat(result.get(0).getExerciseName()).isEqualTo("랫풀다운");
+        Assertions.assertThat(result.get(0).getCnt()).isEqualTo(2);
+
+        Assertions.assertThat(result.get(1).getExerciseName()).isEqualTo("바벨로우");
+        Assertions.assertThat(result.get(1).getCnt()).isEqualTo(1);
+
+        Assertions.assertThat(result.get(2).getExerciseName()).isEqualTo("벤치프레스");
+        Assertions.assertThat(result.get(2).getCnt()).isEqualTo(3);
+
+        Assertions.assertThat(result.get(3).getExerciseName()).isEqualTo("딥스");
+        Assertions.assertThat(result.get(3).getCnt()).isEqualTo(2);
+
+        Assertions.assertThat(result.get(4).getExerciseName()).isEqualTo("체스트 플라이");
+        Assertions.assertThat(result.get(4).getCnt()).isEqualTo(1);
+
+        Assertions.assertThat(result.get(5).getExerciseName()).isEqualTo("푸시업");
+        Assertions.assertThat(result.get(5).getCnt()).isEqualTo(1);
     }
 
 }

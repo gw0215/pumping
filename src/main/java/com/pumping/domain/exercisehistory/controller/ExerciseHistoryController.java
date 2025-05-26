@@ -96,4 +96,13 @@ public class ExerciseHistoryController {
         List<PartVolumeComparisonDto> result = exerciseHistoryService.compareThisMonthAndLastMonthVolume(member.getId());
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/exercise-history/top5")
+    public ResponseEntity<TopExerciseResponse> getTop5ExercisesByPart(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        TopExerciseResponse top5ExercisesByPart = exerciseHistoryService.getTop5ExercisesByPart(startDate, endDate);
+        return ResponseEntity.ok(top5ExercisesByPart);
+    }
 }

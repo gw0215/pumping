@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -41,8 +44,10 @@ class CommentRepositoryTest {
         List<Comment> comments = CommentFixture.createComments(member, board, 3);
         commentRepository.saveAll(comments);
 
-        List<Comment> commentList = commentRepository.findByBoardId(board.getId());
+        Pageable pageable = PageRequest.of(0, 20);
 
+        Page<Comment> commentPage = commentRepository.findByBoardId(board.getId(), pageable);
+        List<Comment> commentList = commentPage.getContent();
         Assertions.assertThat(commentList).hasSize(3);
         Assertions.assertThat(commentList).allMatch(comment -> comment.getBoard().getId().equals(board.getId()));
     }

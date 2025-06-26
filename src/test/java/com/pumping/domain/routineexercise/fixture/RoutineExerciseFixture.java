@@ -21,14 +21,15 @@ public abstract class RoutineExerciseFixture {
         return new RoutineExerciseRequest(exerciseId, 1, exerciseSetRequests);
     }
 
-    public static List<RoutineExerciseRequest> createRoutineExerciseRequests(Long exerciseId, List<ExerciseSetRequest> exerciseSetRequests, int count) {
-
+    public static List<RoutineExerciseRequest> createRoutineExerciseRequests(Long exerciseId, int count, List<ExerciseSetRequest> exerciseSetRequests) {
         return IntStream.range(0, count)
-                .mapToObj(i -> createRoutineExerciseRequest(exerciseId, exerciseSetRequests))
+                .mapToObj(i -> {
+                    return new RoutineExerciseRequest(exerciseId, i + 1, exerciseSetRequests);
+                })
                 .collect(Collectors.toList());
     }
 
-    public static RoutineExerciseRequests createRoutineExerciseRequests(List<RoutineExerciseRequest> routineExerciseRequests) {
-        return new RoutineExerciseRequests("상체운동", routineExerciseRequests);
+    public static RoutineExerciseRequests createRoutineExerciseRequests(String routineName,List<RoutineExerciseRequest> routineExerciseRequests) {
+        return new RoutineExerciseRequests(routineName, routineExerciseRequests);
     }
 }

@@ -3,9 +3,11 @@ package com.pumping.domain.board.model;
 import com.pumping.domain.favorite.model.Favorite;
 import com.pumping.domain.media.model.Media;
 import com.pumping.domain.member.model.Member;
+import com.pumping.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Board {
+public class Board extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,9 +33,11 @@ public class Board {
     public Member member;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    @BatchSize(size = 100)
     private List<Media> mediaList = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    @BatchSize(size = 100)
     private List<Favorite> favoriteList = new ArrayList<>();
 
     private boolean deleted = false;

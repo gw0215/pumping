@@ -32,7 +32,7 @@ class RoutineRepositoryTest {
         Member member = MemberFixture.createMember();
         memberRepository.save(member);
 
-        List<Routine> routines = RoutineFixture.createRoutines(member, 5);
+        List<Routine> routines = RoutineFixture.createRoutines(member, "루틴이름",5);
         routineRepository.saveAll(routines);
 
         List<Routine> routineList = routineRepository.findAllByMemberId(member.getId());

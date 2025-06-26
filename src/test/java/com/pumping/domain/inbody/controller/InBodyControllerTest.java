@@ -1,6 +1,7 @@
 package com.pumping.domain.inbody.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pumping.config.MyContextInitializer;
 import com.pumping.domain.inbody.dto.InBodyRequest;
 import com.pumping.domain.inbody.fixture.InBodyFixture;
 import com.pumping.domain.inbody.model.InBody;
@@ -18,18 +19,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ContextConfiguration(initializers = MyContextInitializer.class)
 @AutoConfigureMockMvc
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class InBodyControllerTest {
@@ -56,13 +60,10 @@ class InBodyControllerTest {
         member = MemberFixture.createMember();
         memberRepository.save(member);
     }
-
     @Test
     @Transactional
-    void 인바디_저장_API_성공() throws Exception {
-
+    void saveInBody_유효한_요청일_경우_201_응답을_반환한다() throws Exception {
         InBodyRequest inBodyRequest = InBodyFixture.createInBodyRequest();
-
         String json = objectMapper.writeValueAsString(inBodyRequest);
 
         MockHttpSession session = new MockHttpSession();
@@ -72,15 +73,32 @@ class InBodyControllerTest {
                         .session(session)
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andDo(MockMvcResultHandlers.print());
-
+                .andExpect(status().isCreated())
+                .andDo(print());
     }
 
     @Test
     @Transactional
-    void 최근_인바디_조회_API_성공() throws Exception {
+    void saveInBody_필수_입력값이_누락된_경우_400_에러를_반환한다() throws Exception {
 
+        InBodyRequest invalidRequest = new InBodyRequest(null, 20.0f, 15.0f, LocalDate.now());
+        String json = objectMapper.writeValueAsString(invalidRequest);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
+        mockMvc.perform(post("/inbody")
+                        .session(session)
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").exists())
+                .andDo(print());
+    }
+
+    @Test
+    @Transactional
+    void findRecentInBody_인바디가_존재할_경우_200_응답과_데이터를_반환한다() throws Exception {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
@@ -90,26 +108,42 @@ class InBodyControllerTest {
         mockMvc.perform(get("/inbody/recent")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
-
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.weight").value(inbody.getWeight()))
+                .andExpect(jsonPath("$.date").value(inbody.getDate().toString()))
+                .andDo(print());
     }
 
     @Test
     @Transactional
-    void 인바디_날짜_조회_API_성공() throws Exception {
-
+    void findRecentInBody_인바디가_존재하지_않을_경우_204_응답을_반환한다() throws Exception {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
+
+        mockMvc.perform(get("/inbody/recent")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent())
+                .andDo(print());
+    }
+
+    @Test
+    @Transactional
+    void findInBodyByDate_지정된_날짜_범위에_해당하는_데이터가_있으면_200_응답을_반환한다() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("member", member);
+
+        InBody inBody = InBodyFixture.createInbody(member);
+        inBodyRepository.save(inBody);
 
         mockMvc.perform(get("/inbody")
                         .session(session)
                         .param("from", LocalDate.now().minusDays(3L).toString())
                         .param("to", LocalDate.now().plusDays(3L).toString())
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
-
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].weight").value(inBody.getWeight()))
+                .andDo(print());
     }
 
 

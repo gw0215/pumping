@@ -2,6 +2,7 @@ package com.pumping.domain.exercise.fixture;
 
 import com.pumping.domain.exercise.model.Exercise;
 import com.pumping.domain.exercise.model.ExercisePart;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,9 +25,22 @@ public abstract class ExerciseFixture {
         return new Exercise(name, EXPLAIN, exercisePart);
     }
 
+    public static Exercise createExerciseWithId(Long id) {
+        Exercise exercise = createExercise();
+        ReflectionTestUtils.setField(exercise, "id", id);
+        return exercise;
+    }
+
     public static List<Exercise> createExercises(int count) {
         return IntStream.range(0, count)
                 .mapToObj(i -> createExercise())
+                .collect(Collectors.toList());
+    }
+
+
+    public static List<Exercise> createExercises(ExercisePart exercisePart, int count) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> createExercise(exercisePart))
                 .collect(Collectors.toList());
     }
 

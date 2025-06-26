@@ -2,6 +2,7 @@ package com.pumping.domain.emailverification.controller;
 
 import com.pumping.domain.emailverification.service.EmailVerificationService;
 import com.pumping.domain.member.dto.EmailCodeCheckRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class EmailVerificationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void checkCode
             (
-                    @RequestBody EmailCodeCheckRequest emailCodeCheckRequest
+                    @Valid @RequestBody EmailCodeCheckRequest emailCodeCheckRequest
             ) {
         emailVerificationService.checkCode(emailCodeCheckRequest);
     }

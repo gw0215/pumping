@@ -5,10 +5,9 @@ import com.pumping.domain.emailverification.model.EmailVerification;
 import com.pumping.domain.emailverification.repository.EmailVerificationRepository;
 import com.pumping.domain.member.dto.EmailCodeCheckRequest;
 import com.pumping.global.common.util.RandomCodeGenerator;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -19,7 +18,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.*;
 
 @Service
 @Slf4j
@@ -43,7 +41,12 @@ public class EmailVerificationService {
 
         while (attempt < MAX_RETRIES && !emailSent) {
             try {
-                sendEmail(email, code);
+                String mailText = String.format("인증 코드: %s\n앱으로 돌아가서 인증을 완료해주세요", code);
+                SimpleMailMessage message = new SimpleMailMessage();
+                message.setTo(email);
+                message.setSubject(MAIL_SUBJECT);
+                message.setText(mailText);
+                javaMailSender.send(message);
                 emailSent = true;
                 log.info("이메일 전송 성공: {} (시도 {}회)", email, attempt + 1);
             } catch (Exception e) {
@@ -64,19 +67,6 @@ public class EmailVerificationService {
             return;
         }
 
-        saveOrUpdateVerification(email, code);
-    }
-
-    private void sendEmail(String email, String code) {
-        String mailText = String.format("인증 코드: %s\n앱으로 돌아가서 인증을 완료해주세요", code);
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject(MAIL_SUBJECT);
-        message.setText(mailText);
-        javaMailSender.send(message);
-    }
-
-    private void saveOrUpdateVerification(String email, String code) {
         LocalDateTime expireTime = LocalDateTime.now().plus(CODE_DURATION);
         Optional<EmailVerification> optional = emailVerificationRepository.findByEmail(email);
         if (optional.isPresent()) {
@@ -92,7 +82,7 @@ public class EmailVerificationService {
     public void checkCode(EmailCodeCheckRequest emailCodeCheckRequest) {
 
         EmailVerification emailVerification = emailVerificationRepository.findByEmail(emailCodeCheckRequest.getEmail())
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new EntityNotFoundException("이메일을 찾을 수 없습니다. 이메일 : " + emailCodeCheckRequest.getEmail()));
 
         LocalDateTime expiresAt = emailVerification.getExpiresAt();
 

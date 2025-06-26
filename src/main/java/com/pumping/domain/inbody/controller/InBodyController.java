@@ -4,6 +4,7 @@ import com.pumping.domain.inbody.dto.InBodyRequest;
 import com.pumping.domain.inbody.dto.InBodyResponse;
 import com.pumping.domain.inbody.service.InBodyService;
 import com.pumping.domain.member.model.Member;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ public class InBodyController {
     @ResponseBody
     @PostMapping(value = "/inbody")
     @ResponseStatus(HttpStatus.CREATED)
-    public void save(@SessionAttribute("member") Member member, @RequestBody InBodyRequest inBodyRequest) {
+    public void save(@SessionAttribute("member") Member member, @Valid @RequestBody InBodyRequest inBodyRequest) {
         inBodyService.save(member, inBodyRequest.getWeight(), inBodyRequest.getSmm(), inBodyRequest.getBfm(), inBodyRequest.getDate());
     }
 

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -27,6 +28,8 @@ public class Member {
 
     private String profileImagePath;
 
+    private String fcmToken;
+
     private boolean deleted = false;
 
     @OneToMany(mappedBy = "member")
@@ -39,6 +42,18 @@ public class Member {
         this.profileImagePath = profileImagePath;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Member member = (Member) o;
+        return Objects.equals(id, member.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
     public void updateMemberProfileImage(String profileImagePath) {
         this.profileImagePath = profileImagePath;
     }
@@ -47,4 +62,7 @@ public class Member {
         this.deleted = true;
     }
 
+    public void updateFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
 }

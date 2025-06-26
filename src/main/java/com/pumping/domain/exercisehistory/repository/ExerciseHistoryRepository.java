@@ -2,6 +2,8 @@ package com.pumping.domain.exercisehistory.repository;
 
 import com.pumping.domain.exercisehistory.dto.ExercisePartSetCountDto;
 import com.pumping.domain.exercisehistory.model.ExerciseHistory;
+import com.pumping.domain.exercisehistory.model.ExerciseHistoryStatus;
+import com.pumping.domain.member.model.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -81,4 +83,12 @@ public interface ExerciseHistoryRepository extends JpaRepository<ExerciseHistory
             ORDER BY part, cnt DESC
             """, nativeQuery = true)
     List<TopExerciseDto> findTop5ByPart(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    List<ExerciseHistory> findByMemberAndPerformedDateBetweenAndExerciseHistoryStatus(
+            Member member,
+            LocalDate startDate,
+            LocalDate endDate,
+            ExerciseHistoryStatus status
+    );
+
 }

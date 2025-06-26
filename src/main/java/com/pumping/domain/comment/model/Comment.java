@@ -2,6 +2,7 @@ package com.pumping.domain.comment.model;
 
 import com.pumping.domain.board.model.Board;
 import com.pumping.domain.member.model.Member;
+import com.pumping.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Comment {
+public class Comment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

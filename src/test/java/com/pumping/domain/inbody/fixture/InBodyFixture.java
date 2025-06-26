@@ -5,6 +5,8 @@ import com.pumping.domain.inbody.model.InBody;
 import com.pumping.domain.member.model.Member;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.IntStream;
 
 public abstract class InBodyFixture {
 
@@ -26,6 +28,12 @@ public abstract class InBodyFixture {
 
     public static InBody createInbody(Member member,LocalDate date) {
         return new InBody(member, WEIGHT, SMM, BFM, date);
+    }
+
+    public static List<InBody> createInBodies(Member member, int count, LocalDate startDate) {
+        return IntStream.range(0, count)
+                .mapToObj(i -> createInbody(member, startDate.plusDays(i)))
+                .toList();
     }
 
 }

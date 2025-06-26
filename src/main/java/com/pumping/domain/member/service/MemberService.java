@@ -123,5 +123,11 @@ public class MemberService {
         return member;
     }
 
+    public void saveFcmToken(Long memberId, String fcmToken) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
 
+        member.updateFcmToken(fcmToken);
+        memberRepository.save(member);
+    }
 }

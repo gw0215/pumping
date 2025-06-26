@@ -1,6 +1,7 @@
 package com.pumping.domain.routine.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pumping.config.MyContextInitializer;
 import com.pumping.domain.exercise.fixture.ExerciseFixture;
 import com.pumping.domain.exercise.model.Exercise;
 import com.pumping.domain.exercise.repository.ExerciseRepository;
@@ -16,16 +17,14 @@ import com.pumping.domain.routine.repository.RoutineRepository;
 import com.pumping.domain.routineexercise.fixture.ExerciseSetFixture;
 import com.pumping.domain.routineexercise.fixture.RoutineExerciseFixture;
 import com.pumping.domain.routineexercise.model.RoutineExercise;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -38,6 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest
+@ContextConfiguration(initializers = MyContextInitializer.class)
 @AutoConfigureMockMvc
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class RoutineControllerTest {
@@ -69,6 +69,11 @@ class RoutineControllerTest {
         memberRepository.save(member);
     }
 
+    @AfterEach
+    void tearDown() {
+        memberRepository.deleteAll();
+    }
+
 
     @Test
     @Transactional
@@ -79,8 +84,8 @@ class RoutineControllerTest {
 
         List<ExerciseSetRequest> exerciseSetRequests = ExerciseSetFixture.createExerciseSetRequests(3);
 
-        List<RoutineExerciseRequest> routineExerciseRequestList = RoutineExerciseFixture.createRoutineExerciseRequests(exercise.getId(), exerciseSetRequests, 5);
-        RoutineExerciseRequests routineExerciseRequests = RoutineExerciseFixture.createRoutineExerciseRequests(routineExerciseRequestList);
+        List<RoutineExerciseRequest> routineExerciseRequestList = RoutineExerciseFixture.createRoutineExerciseRequests(exercise.getId(), 5, exerciseSetRequests);
+        RoutineExerciseRequests routineExerciseRequests = RoutineExerciseFixture.createRoutineExerciseRequests("루틴", routineExerciseRequestList);
 
         String json = objectMapper.writeValueAsString(routineExerciseRequests);
 
@@ -102,7 +107,7 @@ class RoutineControllerTest {
     void 사용자의_모든_루틴_조회_API_성공() throws Exception {
 
         Exercise exercise = ExerciseFixture.createExercise();
-        Routine routine = RoutineFixture.createRoutine(member);
+        Routine routine = RoutineFixture.createRoutine(member,"routinename");
 
         RoutineExercise routineExercise = RoutineExerciseFixture.createRoutineExercise(routine, exercise);
 
@@ -128,7 +133,7 @@ class RoutineControllerTest {
     void 루틴_상세_조회_API_성공() throws Exception {
 
         Exercise exercise = ExerciseFixture.createExercise();
-        Routine routine = RoutineFixture.createRoutine(member);
+        Routine routine = RoutineFixture.createRoutine(member,"routinename");
 
         RoutineExercise routineExercise = RoutineExerciseFixture.createRoutineExercise(routine, exercise);
 

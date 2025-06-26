@@ -52,7 +52,7 @@ class ExerciseHistoryRepositoryTest {
 
         Member member = memberRepository.save(MemberFixture.createMember());
 
-        Routine routine = RoutineFixture.createRoutine(member);
+        Routine routine = RoutineFixture.createRoutine(member,"루틴이름");
         routineRepository.save(routine);
 
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
@@ -70,7 +70,7 @@ class ExerciseHistoryRepositoryTest {
 
         Member member = memberRepository.save(MemberFixture.createMember());
 
-        Routine routine = RoutineFixture.createRoutine(member);
+        Routine routine = RoutineFixture.createRoutine(member,"루틴이름");
         routineRepository.save(routine);
 
         Exercise exercise = ExerciseFixture.createExercise();
@@ -135,7 +135,7 @@ class ExerciseHistoryRepositoryTest {
         int dateRangeStart = 3;
 
         Member member = memberRepository.save(MemberFixture.createMember());
-        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member));
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member,"루틴이름"));
         Exercise chest = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST));
         Exercise back = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.BACK));
 
@@ -176,7 +176,7 @@ class ExerciseHistoryRepositoryTest {
         int sets2 = 2;
 
         Member member = memberRepository.save(MemberFixture.createMember());
-        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member));
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member,"루틴이름"));
         Exercise leg = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.LEGS));
 
         LocalDate thisMonthDate = LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth(), 10);
@@ -208,7 +208,7 @@ class ExerciseHistoryRepositoryTest {
     void 운동부위별_TOP5_운동명_조회() {
 
         Member member  = memberRepository.save(MemberFixture.createMember());
-        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member));
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member,"루틴이름"));
 
         Exercise chest1 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST, "벤치프레스"));
         Exercise chest2 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST, "딥스"));

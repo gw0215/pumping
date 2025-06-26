@@ -22,18 +22,16 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class MemberControllerTest {
+class MemberControllerIntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -52,140 +50,122 @@ class MemberControllerTest {
 
     @Test
     @Transactional
-    void 사용자_저장_API_성공() throws Exception {
-
-        MemberSignUpRequest memberSignUpRequest = MemberFixture.createMemberSignUpRequest();
-        String json = objectMapper.writeValueAsString(memberSignUpRequest);
+    void 회원가입_요청이_정상적으로_처리되면_201_응답() throws Exception {
+        MemberSignUpRequest request = MemberFixture.createMemberSignUpRequest();
+        String json = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(post("/members")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andDo(MockMvcResultHandlers.print());
+                .andExpect(status().isCreated())
+                .andDo(print());
     }
 
     @Test
     @Transactional
-    void 사용자_삭제_API_성공() throws Exception {
-
-
+    void 로그인된_사용자가_회원탈퇴하면_200_응답() throws Exception {
         Member member = MemberFixture.createMember();
         memberRepository.save(member);
-
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
         mockMvc.perform(delete("/members")
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
+                        .session(session))
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
     @Test
     @Transactional
-    void 로그인_API_성공() throws Exception {
-        MemberSignUpRequest memberSignUpRequest = MemberFixture.createMemberSignUpRequest();
-        Long id = memberService.save(memberSignUpRequest);
+    void 로그인_정보가_정상이면_200_응답() throws Exception {
+        memberService.save(MemberFixture.createMemberSignUpRequest());
 
-        LoginRequest loginRequest = MemberFixture.createLoginRequest();
-        String json = objectMapper.writeValueAsString(loginRequest);
+        LoginRequest request = MemberFixture.createLoginRequest();
+        String json = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(post("/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
     @Test
     @Transactional
-    void 로그아웃_API_성공() throws Exception {
+    void 로그인된_사용자가_로그아웃하면_200_응답() throws Exception {
         Member member = MemberFixture.createMember();
         memberRepository.save(member);
-
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
         mockMvc.perform(post("/logout")
                         .session(session))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
     @Test
     @Transactional
-    void 프로필_조회_API_성공() throws Exception {
+    void 로그인된_사용자가_프로필을_조회하면_200_응답() throws Exception {
         Member member = MemberFixture.createMember();
         memberRepository.save(member);
-
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
         mockMvc.perform(get("/members/profile")
                         .session(session))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
     @Test
     @Transactional
-    void 프로필_이미지_수정_API_성공() throws Exception {
+    void 로그인된_사용자가_프로필_이미지를_수정하면_204_응답() throws Exception {
         Member member = MemberFixture.createMember();
         memberRepository.save(member);
-
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
         MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "profile.png",
-                MediaType.IMAGE_PNG_VALUE,
-                "changeimage".getBytes()
+                "file", "profile.png", MediaType.IMAGE_PNG_VALUE, "changeimage".getBytes()
         );
 
-        mockMvc.perform(multipart(HttpMethod.PATCH,"/members/profile-image")
+        mockMvc.perform(multipart(HttpMethod.PATCH, "/members/profile-image")
                         .file(file)
                         .session(session)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(MockMvcResultMatchers.status().isNoContent())
-                .andDo(MockMvcResultHandlers.print());
+                .andExpect(status().isNoContent())
+                .andDo(print());
     }
 
     @Test
     @Transactional
-    void 비밀번호_검증_API_성공() throws Exception {
-        MemberSignUpRequest memberSignUpRequest = MemberFixture.createMemberSignUpRequest();
-        Long id = memberService.save(memberSignUpRequest);
-
-        Optional<Member> optionalMember = memberRepository.findById(id);
-        Assertions.assertThat(optionalMember).isPresent();
-        Member member = optionalMember.get();
+    void 비밀번호가_일치하면_204_응답() throws Exception {
+        memberService.save(MemberFixture.createMemberSignUpRequest());
+        Member member = memberRepository.findAll().get(0);
 
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
-        VerifyPasswordRequest verifyPasswordRequest = MemberFixture.createVerifyPasswordRequest();
-        String json = objectMapper.writeValueAsString(verifyPasswordRequest);
+        String json = objectMapper.writeValueAsString(MemberFixture.createVerifyPasswordRequest());
 
         mockMvc.perform(post("/verify-password")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(MockMvcResultMatchers.status().isNoContent())
-                .andDo(MockMvcResultHandlers.print());
+                .andExpect(status().isNoContent())
+                .andDo(print());
     }
 
     @Test
     @Transactional
-    void 이메일_중복검사_API_성공() throws Exception {
+    void 이메일이_중복되지_않으면_200_응답() throws Exception {
         String email = "test@example.com";
 
         mockMvc.perform(get("/verify-email")
                         .param("email", email))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
 

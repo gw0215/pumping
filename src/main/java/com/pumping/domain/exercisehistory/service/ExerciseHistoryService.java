@@ -6,8 +6,12 @@ import com.pumping.domain.exercise.repository.ExerciseRepository;
 import com.pumping.domain.exercisehistory.dto.*;
 import com.pumping.domain.exercisehistory.model.ExerciseHistory;
 import com.pumping.domain.exercisehistory.model.ExerciseHistoryStatus;
-import com.pumping.domain.exercisehistory.repository.*;
+import com.pumping.domain.exercisehistory.repository.ExerciseHistoryRepository;
+import com.pumping.domain.exercisehistory.repository.MonthlyPartVolumeDto;
+import com.pumping.domain.exercisehistory.repository.TopExerciseDto;
+import com.pumping.domain.exercisehistory.repository.WeeklyExerciseHistoryStatsDto;
 import com.pumping.domain.member.model.Member;
+import com.pumping.domain.member.repository.MemberRepository;
 import com.pumping.domain.performedexercise.dto.PerformedExerciseRequest;
 import com.pumping.domain.performedexercise.dto.PerformedExerciseResponse;
 import com.pumping.domain.performedexercise.dto.PerformedExerciseSetRequest;
@@ -17,10 +21,10 @@ import com.pumping.domain.performedexercise.model.PerformedExerciseSet;
 import com.pumping.domain.performedexercise.repository.PerformedExerciseSetRepository;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
-import com.pumping.domain.routineexercise.model.ExerciseSet;
 import com.pumping.domain.routineexercise.model.RoutineExercise;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +32,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -41,29 +46,42 @@ public class ExerciseHistoryService {
 
     private final ExerciseRepository exerciseRepository;
 
+    private final MemberRepository memberRepository;
+
     @Transactional
     public void save(Member member, Long routineId, LocalDate date) {
 
-        Routine routine = routineRepository.findById(routineId).orElseThrow(RuntimeException::new);
+        Routine routine = routineRepository.findById(routineId)
+                .orElseThrow(RuntimeException::new);
 
         List<RoutineExercise> routineExercises = routine.getRoutineExercises();
 
-        ExerciseHistory exerciseHistory = new ExerciseHistory(member, routine, LocalTime.MIDNIGHT, ExerciseHistoryStatus.NOT_STARTED, date);
-        for (RoutineExercise routineExercise : routineExercises) {
-            List<ExerciseSet> exerciseSets = routineExercise.getExerciseSets();
+        ExerciseHistory exerciseHistory = new ExerciseHistory(
+                member, routine, LocalTime.MIDNIGHT, ExerciseHistoryStatus.NOT_STARTED, date
+        );
 
-            Exercise exercise = routineExercise.getExercise();
-            PerformedExercise performedExercise = new PerformedExercise(exerciseHistory, exercise, routineExercise.getExerciseOrder());
+        routineExercises.stream()
+                .map(routineExercise -> {
+                    Exercise exercise = routineExercise.getExercise();
+                    PerformedExercise performedExercise = new PerformedExercise(
+                            exerciseHistory, exercise, routineExercise.getExerciseOrder()
+                    );
 
-            for (ExerciseSet exerciseSet : exerciseSets) {
-                performedExercise.addPerformedExerciseSet(new PerformedExerciseSet(performedExercise, exerciseSet.getWeight(), exerciseSet.getRepetition(), exerciseSet.getSetCount(), false));
-            }
+                    routineExercise.getExerciseSets().stream()
+                            .map(set -> new PerformedExerciseSet(
+                                    performedExercise,
+                                    set.getWeight(),
+                                    set.getRepetition(),
+                                    set.getSetCount(),
+                                    false
+                            ))
+                            .forEach(performedExercise::addPerformedExerciseSet);
 
-            exerciseHistory.addPerformedExercise(performedExercise);
-        }
+                    return performedExercise;
+                })
+                .forEach(exerciseHistory::addPerformedExercise);
 
         exerciseHistoryRepository.save(exerciseHistory);
-
     }
 
     @Transactional
@@ -102,20 +120,19 @@ public class ExerciseHistoryService {
         }
 
         List<PerformedExerciseSetRequest> updatedSets = request.getUpdatedSets();
-        for (PerformedExerciseSetRequest updateRequest : updatedSets) {
-            Long updateRequestPerformedExerciseSetId = updateRequest.getPerformedExerciseSetId();
-            for (PerformedExercise performedExercise : performedExercises) {
-                for (PerformedExerciseSet performedExerciseSet : performedExercise.getPerformedExerciseSets()) {
-                    if (performedExerciseSet.getId().equals(updateRequestPerformedExerciseSetId)) {
-                        performedExerciseSet.updateWeight(updateRequest.getWeight());
-                        performedExerciseSet.updateRepetition(updateRequest.getRepetition());
-                        performedExerciseSet.updateSetCount(updateRequest.getSetCount());
-                        performedExerciseSet.updateCompleted(updateRequest.getCompleted());
-                        break;
-                    }
-                }
-            }
-        }
+        updatedSets.forEach(updateReq -> {
+            performedExercises.stream()
+                    .flatMap(pe -> pe.getPerformedExerciseSets().stream())
+                    .filter(set -> set.getId().equals(updateReq.getPerformedExerciseSetId()))
+                    .findFirst()
+                    .ifPresent(set -> {
+                        set.updateWeight(updateReq.getWeight());
+                        set.updateRepetition(updateReq.getRepetition());
+                        set.updateSetCount(updateReq.getSetCount());
+                        set.updateCompleted(updateReq.getCompleted());
+                    });
+        });
+
         List<PerformedExerciseRequest> newExercises = request.getNewExercises();
         if (newExercises != null) {
             for (PerformedExerciseRequest newExerciseReq : newExercises) {
@@ -318,4 +335,90 @@ public class ExerciseHistoryService {
                 raw.stream().filter(d -> d.getPart() == ExercisePart.HIP).toList()
         );
     }
+
+    @Async("reportExecutor")
+    @Transactional
+    public CompletableFuture<WeeklyReportDto> generateAllWeeklyReports(Member member, LocalDate startDate, LocalDate endDate) {
+
+        List<ExerciseHistory> histories = exerciseHistoryRepository.findByMemberAndPerformedDateBetweenAndExerciseHistoryStatus(
+                member,
+                startDate,
+                endDate,
+                ExerciseHistoryStatus.COMPLETED
+        );
+
+        long totalWorkoutDays = histories.stream()
+                .map(ExerciseHistory::getPerformedDate)
+                .distinct()
+                .count();
+
+        Map<String, WeeklyReportDto.ExerciseSummary> exerciseSummaryMap = new HashMap<>();
+
+        int totalSetsSum = 0;
+        int totalRepsSum = 0;
+        double totalWeightSum = 0.0;
+        int totalWorkoutDurationMinutesSum = 0;
+
+        for (ExerciseHistory history : histories) {
+            if (history.getPerformedTime() != null) {
+                totalWorkoutDurationMinutesSum += history.getPerformedTime().getHour() * 60 + history.getPerformedTime().getMinute();
+            }
+
+            for (PerformedExercise performedExercise : history.getPerformedExercises()) {
+                String exerciseName = performedExercise.getExercise().getName();
+
+                WeeklyReportDto.ExerciseSummary summary = exerciseSummaryMap.getOrDefault(
+                        exerciseName,
+                        new WeeklyReportDto.ExerciseSummary(exerciseName, 0, 0, 0.0)
+                );
+
+                int sets = 0;
+                int reps = 0;
+                double weight = 0.0;
+
+                for (PerformedExerciseSet set : performedExercise.getPerformedExerciseSets()) {
+                    sets++;
+                    reps += (set.getRepetition() != null ? set.getRepetition() : 0);
+                    weight += (set.getWeight() != null ? set.getWeight() : 0) * (set.getRepetition() != null ? set.getRepetition() : 0);
+                }
+
+                WeeklyReportDto.ExerciseSummary updatedSummary = new WeeklyReportDto.ExerciseSummary(
+                        exerciseName,
+                        summary.getTotalSets() + sets,
+                        summary.getTotalReps() + reps,
+                        summary.getTotalWeight() + weight
+                );
+
+                exerciseSummaryMap.put(exerciseName, updatedSummary);
+
+                totalSetsSum += sets;
+                totalRepsSum += reps;
+                totalWeightSum += weight;
+            }
+        }
+
+        int avgDuration = totalWorkoutDays > 0 ? totalWorkoutDurationMinutesSum / (int) totalWorkoutDays : 0;
+
+        List<WeeklyReportDto.ExerciseSummary> summaries = new ArrayList<>(exerciseSummaryMap.values());
+
+        String mostFrequentExercise = summaries.stream()
+                .max(Comparator.comparingInt(WeeklyReportDto.ExerciseSummary::getTotalSets))
+                .map(WeeklyReportDto.ExerciseSummary::getExerciseName)
+                .orElse("");
+
+        WeeklyReportDto reportDto = new WeeklyReportDto(
+                member.getId(),
+                totalWorkoutDays,
+                totalSetsSum,
+                totalRepsSum,
+                totalWeightSum,
+                avgDuration,
+                mostFrequentExercise,
+                summaries
+        );
+
+
+        return CompletableFuture.completedFuture(reportDto);
+    }
+
 }

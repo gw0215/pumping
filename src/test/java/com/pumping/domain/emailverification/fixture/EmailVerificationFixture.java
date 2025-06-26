@@ -5,7 +5,6 @@ import com.pumping.domain.member.dto.EmailCodeCheckRequest;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAmount;
 
 public abstract class EmailVerificationFixture {
 
@@ -17,8 +16,16 @@ public abstract class EmailVerificationFixture {
         return new EmailVerification(EMAIL, CODE, EXPIRES_AT);
     }
 
+    public static EmailVerification createEmailVerification(String email, String code, LocalDateTime expiredAt) {
+        return new EmailVerification(email, code, expiredAt);
+    }
+
     public static EmailCodeCheckRequest createEmailCodeCheckRequest() {
         return new EmailCodeCheckRequest(EMAIL, CODE);
+    }
+
+    public static EmailCodeCheckRequest createEmailCodeCheckRequest(String email, String code) {
+        return new EmailCodeCheckRequest(email, code);
     }
 
 

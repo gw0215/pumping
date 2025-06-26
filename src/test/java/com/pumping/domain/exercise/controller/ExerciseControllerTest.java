@@ -1,7 +1,9 @@
 package com.pumping.domain.exercise.controller;
 
+import com.pumping.config.MyContextInitializer;
 import com.pumping.domain.exercise.fixture.ExerciseFixture;
 import com.pumping.domain.exercise.model.Exercise;
+import com.pumping.domain.exercise.model.ExercisePart;
 import com.pumping.domain.exercise.repository.ExerciseRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
@@ -16,17 +18,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ContextConfiguration(initializers = MyContextInitializer.class)
 @AutoConfigureMockMvc
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ExerciseControllerTest {
@@ -53,10 +59,9 @@ class ExerciseControllerTest {
 
     @Test
     @Transactional
-    void 부위에_해당하는_모든_운동_조회_API_성공() throws Exception {
+    void CHEST_부위로_운동_조회시_성공적으로_200_응답과_운동_리스트를_반환한다() throws Exception {
 
-        List<Exercise> exercises = ExerciseFixture.createExercises(3);
-
+        List<Exercise> exercises = ExerciseFixture.createExercises(ExercisePart.CHEST, 3);
         exerciseRepository.saveAll(exercises);
 
         MockHttpSession session = new MockHttpSession();
@@ -67,9 +72,13 @@ class ExerciseControllerTest {
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andDo(MockMvcResultHandlers.print());
-
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].part").value(ExercisePart.CHEST.getKoreanName()))
+                .andExpect(jsonPath("$[0].id").exists())
+                .andExpect(jsonPath("$[0].name").isNotEmpty())
+                .andExpect(jsonPath("$[0].explain").isNotEmpty())
+                .andDo(print());
     }
 
 }

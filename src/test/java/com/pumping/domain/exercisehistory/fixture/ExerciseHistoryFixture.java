@@ -11,6 +11,7 @@ import com.pumping.domain.performedexercise.model.PerformedExerciseSet;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.exercisehistory.dto.ExerciseHistoryRequest;
 import com.pumping.domain.exercisehistory.model.ExerciseHistory;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -43,16 +44,12 @@ public abstract class ExerciseHistoryFixture {
         return new ExerciseHistory(member, routine, LOCAL_TIME, ExerciseHistoryStatus.IN_PROGRESS, DATE);
     }
 
-    public static ExerciseHistory createExerciseHistory(Member member, Routine routine, LocalDate date) {
-        return new ExerciseHistory(member, routine, LOCAL_TIME, ExerciseHistoryStatus.IN_PROGRESS, date);
+    public static ExerciseHistory createExerciseHistoryWithId(Member member, Routine routine,Long id) {
+        return new ExerciseHistory(member, routine, LOCAL_TIME, ExerciseHistoryStatus.IN_PROGRESS, DATE);
     }
 
     public static ExerciseHistory createExerciseHistory(Member member, Routine routine, LocalDate date,ExerciseHistoryStatus exerciseHistoryStatus) {
         return new ExerciseHistory(member, routine, LOCAL_TIME, exerciseHistoryStatus, date);
-    }
-
-    public static ExerciseHistory createExerciseHistory(Member member, Routine routine,LocalTime localTime, LocalDate date,ExerciseHistoryStatus exerciseHistoryStatus) {
-        return new ExerciseHistory(member, routine,localTime, exerciseHistoryStatus, date);
     }
 
     public static ExerciseHistoryUpdateRequest createExerciseHistoryUpdateRequest(List<PerformedExerciseSetRequest> addedSets,List<PerformedExerciseSetRequest> updatedSets,List<Long> deletedSetIds,List<PerformedExerciseRequest> newExercises) {
@@ -71,30 +68,29 @@ public abstract class ExerciseHistoryFixture {
         return new PerformedExercise(exerciseHistory,exercise,SET_ORDER);
     }
 
+    public static PerformedExercise createPerformedExerciseWithId(ExerciseHistory exerciseHistory, Exercise exercise,Long id) {
+        PerformedExercise performedExercise = new PerformedExercise(exerciseHistory, exercise, SET_ORDER);
+        ReflectionTestUtils.setField(performedExercise, "id", id);
+        return performedExercise;
+    }
 
 
     public static PerformedExerciseSet createPerformedExerciseSet(PerformedExercise performedExercise) {
         return new PerformedExerciseSet(performedExercise, WEIGHT, REPETITION, SET_COUNT, COMPLETED);
     }
 
-    public static PerformedExerciseSet createPerformedExerciseSet(PerformedExercise performedExercise, Float weight) {
-        return new PerformedExerciseSet(performedExercise, weight, REPETITION, SET_COUNT, COMPLETED);
+    public static PerformedExerciseSet createPerformedExerciseSetWithId(PerformedExercise performedExercise,Long id) {
+        PerformedExerciseSet performedExerciseSet = new PerformedExerciseSet(performedExercise, WEIGHT, REPETITION, SET_COUNT, COMPLETED);
+        ReflectionTestUtils.setField(performedExerciseSet, "id", id);
+        return performedExerciseSet;
     }
 
     public static PerformedExerciseSet createPerformedExerciseSet(PerformedExercise performedExercise, Float weight, Integer setCount, Boolean completed) {
         return new PerformedExerciseSet(performedExercise, weight, REPETITION, setCount, completed);
     }
 
-    public static PerformedExerciseSet createPerformedExerciseSet(PerformedExercise performedExercise, Float weight, Integer repetition) {
-        return new PerformedExerciseSet(performedExercise, weight, repetition, SET_COUNT, COMPLETED);
-    }
-
     public static PerformedExerciseSet createPerformedExerciseSet(PerformedExercise pe, Float weight, Integer repetition, Integer setCount) {
         return new PerformedExerciseSet(pe, weight, repetition, setCount, true);
-    }
-
-    public static List<PerformedExerciseSet> createPerformedExerciseSet(int count,PerformedExercise performedExercise) {
-        return IntStream.range(0, count).mapToObj(i -> createPerformedExerciseSet(performedExercise)).toList();
     }
 
     public static PerformedExerciseRequest createPerformedExerciseRequest(Long exerciseId, List<PerformedExerciseSetRequest> performedExerciseSetRequests) {

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,17 +49,14 @@ public class InBodyService {
 
     @Transactional
     public List<InBodyResponse> findByDate(Member member, LocalDate from, LocalDate to) {
-        List<InBody> inBodies = inBodyRepository.findByMemberAndDateBetween(member, from, to);
-
-        List<InBodyResponse> inBodyResponses = new ArrayList<>();
-
-        for (InBody inBody : inBodies) {
-            InBodyResponse inBodyResponse = new InBodyResponse(inBody.getWeight(), inBody.getSmm(), inBody.getBfm(), inBody.getDate());
-            inBodyResponses.add(inBodyResponse);
-        }
-
-        return inBodyResponses;
-
+        return inBodyRepository.findByMemberAndDateBetween(member, from, to).stream()
+                .map(inBody -> new InBodyResponse(
+                        inBody.getWeight(),
+                        inBody.getSmm(),
+                        inBody.getBfm(),
+                        inBody.getDate()
+                ))
+                .toList();
     }
 
 }

@@ -1,13 +1,11 @@
 package com.pumping.domain.member.controller;
 
-import com.pumping.domain.member.dto.LoginRequest;
-import com.pumping.domain.member.dto.MemberResponse;
-import com.pumping.domain.member.dto.MemberSignUpRequest;
-import com.pumping.domain.member.dto.VerifyPasswordRequest;
+import com.pumping.domain.member.dto.*;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,7 +25,7 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public void login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+    public void login(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         Member member = memberService.login(loginRequest.getEmail(), loginRequest.getPassword());
         HttpSession session = request.getSession();
         session.setAttribute("member", member);
@@ -61,7 +59,7 @@ public class MemberController {
 
     @PostMapping("/verify-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void verifyPassword(@SessionAttribute("member") Member member, @RequestBody VerifyPasswordRequest request) {
+    public void verifyPassword(@SessionAttribute("member") Member member, @Valid @RequestBody VerifyPasswordRequest request) {
         memberService.verifyPassword(member, request.getPassword());
     }
 
@@ -71,5 +69,9 @@ public class MemberController {
         memberService.checkDuplicationEmail(email);
     }
 
+    @PostMapping("/fcm-token")
+    public void saveFcmToken(@Valid @RequestBody FcmTokenRequest request, @SessionAttribute Member member) {
+        memberService.saveFcmToken(member.getId(), request.getFcmToken());
+    }
 
 }

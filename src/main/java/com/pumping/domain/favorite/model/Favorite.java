@@ -9,6 +9,11 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"member_id", "board_id"})
+        }
+)
 public class Favorite {
 
     @Id

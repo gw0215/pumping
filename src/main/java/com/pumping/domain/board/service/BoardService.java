@@ -1,10 +1,10 @@
 package com.pumping.domain.board.service;
 
 import com.pumping.domain.board.dto.BoardResponse;
+import com.pumping.domain.board.exception.NoPermissionException;
 import com.pumping.domain.board.model.Board;
 import com.pumping.domain.board.repository.BoardRepository;
-import com.pumping.domain.favorite.model.Favorite;
-import com.pumping.domain.media.dto.MediaResponse;
+import com.pumping.domain.favorite.repository.FavoriteRepository;
 import com.pumping.domain.media.model.Media;
 import com.pumping.domain.member.model.Member;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -29,8 +28,10 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
 
+    private final FavoriteRepository favoriteRepository;
+
     @Transactional
-    public void save(Member member, String title, String content, MultipartFile file) {
+    public Long save(Member member, String title, String content, MultipartFile file) {
 
         Board board = new Board(member, title, content);
 
@@ -45,49 +46,45 @@ public class BoardService {
             board.addMedia(media);
         }
 
-        boardRepository.save(board);
+        return boardRepository.save(board).getId();
+
     }
 
     @Transactional(readOnly = true)
     public Page<BoardResponse> findAll(Member member, Pageable pageable) {
-        Page<Board> boardPage = boardRepository.findBoardsWithFavoritesByMember(pageable);
+        Page<Board> boardPage = boardRepository.findBoards(pageable);
 
-        List<BoardResponse> boardResponses = new ArrayList<>();
+        List<Long> boardIds = boardPage.getContent().stream()
+                .map(Board::getId)
+                .toList();
 
-        for (Board board : boardPage.getContent()) {
-            List<MediaResponse> mediaResponses = new ArrayList<>();
+        List<Long> likedBoardIds = favoriteRepository.findBoardIdsByMemberAndBoardIds(member.getId(), boardIds);
 
-            for (Media media : board.getMediaList()) {
-                mediaResponses.add(new MediaResponse(media.getId(), media.getFileName(), media.getFileType()));
-            }
-
-            boolean liked = false;
-
-            for (Favorite favorite : board.getFavoriteList()) {
-                if (favorite.getMember().getId().equals(member.getId())) {
-                    liked = true;
-                    break;
-                }
-            }
-
-            boardResponses.add(new BoardResponse(board.getId(), board.getMember().getId(), board.getMember().getNickname(), board.getMember().getProfileImagePath(), board.getTitle(), board.getContent(), board.getLikeCount(), board.getCommentCount(), mediaResponses, liked));
-        }
+        List<BoardResponse> boardResponses = boardPage.getContent().stream()
+                .map(board -> BoardResponse.from(board, likedBoardIds.contains(board.getId())))
+                .toList();
 
         return new PageImpl<>(boardResponses, pageable, boardPage.getTotalElements());
     }
 
 
     @Transactional
-    public void update(Long boardId, String title, String content) {
+    public void update(Long boardId, String title, String content, Member member) {
         Board board = boardRepository.findById(boardId).orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. 게시글 ID : " + boardId));
+        if (!board.getMember().getId().equals(member.getId())) {
+            throw new NoPermissionException("해당 게시글을 수정할 권한이 없습니다.");
+        }
         board.updateTitle(title);
         board.updateContent(content);
     }
 
 
     @Transactional
-    public void deleteById(Long boardId) {
+    public void deleteById(Long boardId,Member member) {
         Board board = boardRepository.findById(boardId).orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. 게시글 ID : " + boardId));
+        if (!board.getMember().getId().equals(member.getId())) {
+            throw new NoPermissionException("해당 게시글을 삭제할 권한이 없습니다.");
+        }
         board.deleteBoard();
     }
 

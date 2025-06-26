@@ -8,6 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
 
-    @Query("SELECT b FROM Board b WHERE b.member.deleted = false AND b.deleted = false")
-    Page<Board> findBoardsWithFavoritesByMember(Pageable pageable);
+    @Query("SELECT b FROM Board b JOIN FETCH b.member WHERE b.member.deleted = false AND b.deleted = false ")
+    Page<Board> findBoards(Pageable pageable);
 }

@@ -6,6 +6,11 @@ build/
 !**/src/test/**/build/
 *.properties
 .env
+
+# Firebase Admin SDK 서비스 계정 키
+firebase-admin.json
+
+
 ### STS ###
 .apt_generated
 .classpath

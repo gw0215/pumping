@@ -33,7 +33,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 @SpringBootTest
-@ContextConfiguration(initializers = MyContextInitializer.class)
 @AutoConfigureMockMvc
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class MediaControllerTest {

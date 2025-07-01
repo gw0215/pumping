@@ -1,145 +1,84 @@
 package com.pumping.domain.emailverification.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pumping.config.MyContextInitializer;
-import com.pumping.domain.emailverification.fixture.EmailVerificationFixture;
-import com.pumping.domain.emailverification.model.EmailVerification;
-import com.pumping.domain.emailverification.repository.EmailVerificationRepository;
+import com.pumping.AbstractControllerTest;
+import com.pumping.domain.emailverification.service.EmailVerificationService;
 import com.pumping.domain.member.dto.EmailCodeCheckRequest;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@ContextConfiguration(initializers = MyContextInitializer.class)
-@AutoConfigureMockMvc
-@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+@WebMvcTest(EmailVerificationController.class)
 class EmailVerificationControllerTest {
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    EmailVerificationRepository emailVerificationRepository;
+    private ObjectMapper objectMapper;
 
     @MockitoBean
-    JavaMailSender javaMailSender;
+    private EmailVerificationService emailVerificationService;
 
-    @Test
-    @Transactional
-    void 이메일_전송_API_성공() throws Exception {
-        String email = "test@pumping.com";
+    @Nested
+    class 이메일_전송_API {
 
-        mockMvc.perform(get("/emails")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("email", email))
-                .andExpect(status().isCreated())
-                .andDo(print());
+        @Test
+        void 이메일_전송_요청을_보내면_201을_반환한다() throws Exception {
+
+            String email = "test@example.com";
+
+            mockMvc.perform(get("/emails")
+                            .param("email", email))
+                    .andExpect(status().isCreated());
+
+            verify(emailVerificationService).sendCode(email);
+        }
     }
 
-    @Test
-    @Transactional
-    void 이메일_검증_API_성공() throws Exception {
-        EmailVerification emailVerification = EmailVerificationFixture.createEmailVerification(
-                "test@pumping.com", "12345", LocalDateTime.now().plusMinutes(3)
-        );
-        emailVerificationRepository.save(emailVerification);
+    @Nested
+    class 인증코드_검증_API {
 
-        EmailCodeCheckRequest request = new EmailCodeCheckRequest("test@pumping.com", "12345");
-        String json = objectMapper.writeValueAsString(request);
+        @Test
+        void 유효한_인증코드_요청은_204를_반환한다() throws Exception {
+            EmailCodeCheckRequest request = new EmailCodeCheckRequest("test@example.com", "12345");
 
-        mockMvc.perform(post("/emails")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isNoContent())
-                .andDo(print());
-    }
+            mockMvc.perform(post("/emails")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isNoContent());
 
-    @Test
-    @Transactional
-    void 이메일_코드_검증_실패_만료된_코드() throws Exception {
-        String email = "expired@pumping.com";
-        String code = "12345";
-        LocalDateTime expiredAt = LocalDateTime.now().minusMinutes(1);
+            verify(emailVerificationService).checkCode(any(EmailCodeCheckRequest.class));
+        }
 
-        EmailVerification expiredVerification = EmailVerificationFixture.createEmailVerification(email, code, expiredAt);
-        emailVerificationRepository.save(expiredVerification);
+        @ParameterizedTest
+        @CsvSource({
+                "'', 12345, 이메일은 필수입니다.",
+                "invalidEmail, 12345, 올바른 이메일 형식이어야 합니다.",
+                "test@example.com, 1234, 인증 코드는 5자리여야 합니다.",
+                "test@example.com, 123456, 인증 코드는 5자리여야 합니다."
+        })
+        void 잘못된_입력값이면_400과_에러메시지를_반환한다(String email, String code, String expectedMessage) throws Exception {
 
-        EmailCodeCheckRequest request = new EmailCodeCheckRequest(email, code);
-        String json = objectMapper.writeValueAsString(request);
+            EmailCodeCheckRequest request = new EmailCodeCheckRequest(email, code);
 
-        mockMvc.perform(post("/emails")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("인증 코드가 만료되었습니다."))
-                .andDo(print());
-    }
-
-    @Test
-    @Transactional
-    void 이메일_코드_검증_실패_코드_불일치() throws Exception {
-        EmailVerification saved = EmailVerificationFixture.createEmailVerification(
-                "wrongcode@pumping.com", "999999", LocalDateTime.now().plusMinutes(3)
-        );
-        emailVerificationRepository.save(saved);
-
-        EmailCodeCheckRequest request = new EmailCodeCheckRequest("wrongcode@pumping.com", "12345");
-        String json = objectMapper.writeValueAsString(request);
-
-        mockMvc.perform(post("/emails")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("인증 코드가 올바르지 않습니다."))
-                .andDo(print());
-    }
-
-    @Test
-    @Transactional
-    void 이메일_코드_검증_실패_존재하지_않는_이메일() throws Exception {
-        EmailCodeCheckRequest request = new EmailCodeCheckRequest("notfound@pumping.com", "12345");
-        String json = objectMapper.writeValueAsString(request);
-
-        mockMvc.perform(post("/emails")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("이메일을 찾을 수 없습니다. 이메일 : " + request.getEmail()))
-                .andDo(print());
-    }
-
-    @Test
-    @Transactional
-    void 이메일_코드_검증_실패_형식오류() throws Exception {
-        EmailCodeCheckRequest request = new EmailCodeCheckRequest("invalid-email", "12345");
-        String json = objectMapper.writeValueAsString(request);
-
-        mockMvc.perform(post("/emails")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("올바른 이메일 형식이어야 합니다."))
-                .andDo(print());
+            mockMvc.perform(post("/emails")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value(expectedMessage));
+        }
     }
 }

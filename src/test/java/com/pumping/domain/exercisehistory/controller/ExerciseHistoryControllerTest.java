@@ -48,7 +48,6 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @SpringBootTest
-@ContextConfiguration(initializers = MyContextInitializer.class)
 @AutoConfigureMockMvc
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class ExerciseHistoryControllerTest {

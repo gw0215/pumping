@@ -1,19 +1,18 @@
 package com.pumping.domain.routine.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pumping.config.MyContextInitializer;
 import com.pumping.domain.exercise.fixture.ExerciseFixture;
 import com.pumping.domain.exercise.model.Exercise;
 import com.pumping.domain.exercise.repository.ExerciseRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
-import com.pumping.domain.routineexercise.dto.ExerciseSetRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequest;
 import com.pumping.domain.routine.dto.RoutineExerciseRequests;
 import com.pumping.domain.routine.fixture.RoutineFixture;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
+import com.pumping.domain.routineexercise.dto.ExerciseSetRequest;
 import com.pumping.domain.routineexercise.fixture.ExerciseSetFixture;
 import com.pumping.domain.routineexercise.fixture.RoutineExerciseFixture;
 import com.pumping.domain.routineexercise.model.RoutineExercise;
@@ -24,7 +23,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -106,7 +104,7 @@ class RoutineControllerTest {
     void 사용자의_모든_루틴_조회_API_성공() throws Exception {
 
         Exercise exercise = ExerciseFixture.createExercise();
-        Routine routine = RoutineFixture.createRoutine(member,"routinename");
+        Routine routine = RoutineFixture.createRoutine(member, "routinename");
 
         RoutineExercise routineExercise = RoutineExerciseFixture.createRoutineExercise(routine, exercise);
 
@@ -132,7 +130,7 @@ class RoutineControllerTest {
     void 루틴_상세_조회_API_성공() throws Exception {
 
         Exercise exercise = ExerciseFixture.createExercise();
-        Routine routine = RoutineFixture.createRoutine(member,"routinename");
+        Routine routine = RoutineFixture.createRoutine(member, "routinename");
 
         RoutineExercise routineExercise = RoutineExerciseFixture.createRoutineExercise(routine, exercise);
 

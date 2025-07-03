@@ -1,24 +1,22 @@
 package com.pumping.domain.comment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pumping.AbstractControllerTest;
 import com.pumping.domain.board.exception.NoPermissionException;
 import com.pumping.domain.comment.dto.CommentRequest;
 import com.pumping.domain.comment.dto.CommentResponse;
 import com.pumping.domain.comment.fixture.CommentFixture;
-import com.pumping.domain.comment.service.CommentService;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -31,17 +29,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(CommentController.class)
-class CommentControllerTest {
+class CommentControllerTest extends AbstractControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @MockitoBean
-    private CommentService commentService;
 
     private Member member;
 

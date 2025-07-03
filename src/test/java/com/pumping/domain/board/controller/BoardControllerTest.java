@@ -1,18 +1,17 @@
 package com.pumping.domain.board.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pumping.AbstractControllerTest;
 import com.pumping.domain.board.dto.BoardRequest;
 import com.pumping.domain.board.dto.BoardResponse;
 import com.pumping.domain.board.exception.NoPermissionException;
 import com.pumping.domain.board.fixture.BoardFixture;
-import com.pumping.domain.board.service.BoardService;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,17 +31,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(BoardController.class)
-class BoardControllerTest {
+class BoardControllerTest extends AbstractControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @MockitoBean
-    private BoardService boardService;
 
     @Test
     void 게시글을_파일과_함께_저장하면_201을_반환한다() throws Exception {
@@ -231,7 +225,7 @@ class BoardControllerTest {
                         .session(session))
                 .andExpect(status().isBadRequest());
 
-        verify(boardService, never()).update(any(), any(), any(),any());
+        verify(boardService, never()).update(any(), any(), any(), any());
     }
 
     @Test

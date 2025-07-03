@@ -2,10 +2,8 @@ package com.pumping.domain.inbody.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pumping.AbstractControllerTest;
-import com.pumping.domain.board.controller.BoardController;
 import com.pumping.domain.inbody.dto.InBodyRequest;
 import com.pumping.domain.inbody.dto.InBodyResponse;
-import com.pumping.domain.inbody.service.InBodyService;
 import com.pumping.domain.member.model.Member;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -13,10 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -31,17 +27,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(InBodyController.class)
-class InBodyControllerTest {
+class InBodyControllerTest extends AbstractControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @MockitoBean
-    private InBodyService inBodyService;
 
     private MockHttpSession session;
 

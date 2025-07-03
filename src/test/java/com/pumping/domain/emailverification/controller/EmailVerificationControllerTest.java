@@ -2,35 +2,29 @@ package com.pumping.domain.emailverification.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pumping.AbstractControllerTest;
-import com.pumping.domain.emailverification.service.EmailVerificationService;
 import com.pumping.domain.member.dto.EmailCodeCheckRequest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(EmailVerificationController.class)
-class EmailVerificationControllerTest {
+class EmailVerificationControllerTest extends AbstractControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @MockitoBean
-    private EmailVerificationService emailVerificationService;
 
     @Nested
     class 이메일_전송_API {

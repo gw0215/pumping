@@ -1,13 +1,16 @@
 package com.pumping.domain.exercisehistory.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pumping.config.MyContextInitializer;
 import com.pumping.domain.exercise.fixture.ExerciseFixture;
 import com.pumping.domain.exercise.model.Exercise;
 import com.pumping.domain.exercise.model.ExercisePart;
 import com.pumping.domain.exercise.repository.ExerciseRepository;
+import com.pumping.domain.exercisehistory.dto.ExerciseHistoryRequest;
 import com.pumping.domain.exercisehistory.dto.ExerciseHistoryUpdateRequest;
+import com.pumping.domain.exercisehistory.fixture.ExerciseHistoryFixture;
+import com.pumping.domain.exercisehistory.model.ExerciseHistory;
 import com.pumping.domain.exercisehistory.model.ExerciseHistoryStatus;
+import com.pumping.domain.exercisehistory.repository.ExerciseHistoryRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
@@ -20,10 +23,6 @@ import com.pumping.domain.performedexercise.repository.PerformedExerciseSetRepos
 import com.pumping.domain.routine.fixture.RoutineFixture;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
-import com.pumping.domain.exercisehistory.dto.ExerciseHistoryRequest;
-import com.pumping.domain.exercisehistory.fixture.ExerciseHistoryFixture;
-import com.pumping.domain.exercisehistory.model.ExerciseHistory;
-import com.pumping.domain.exercisehistory.repository.ExerciseHistoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -34,7 +33,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -92,7 +90,7 @@ class ExerciseHistoryControllerTest {
     @Transactional
     void 운동_기록_저장_API_성공() throws Exception {
 
-        Routine routine = RoutineFixture.createRoutine(member,"루틴이름");
+        Routine routine = RoutineFixture.createRoutine(member, "루틴이름");
         routineRepository.save(routine);
 
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
@@ -125,7 +123,7 @@ class ExerciseHistoryControllerTest {
         Exercise exercise2 = ExerciseFixture.createExercise();
         exerciseRepository.save(exercise2);
 
-        Routine routine = RoutineFixture.createRoutine(member,"루틴이름");
+        Routine routine = RoutineFixture.createRoutine(member, "루틴이름");
         routineRepository.save(routine);
 
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
@@ -156,7 +154,7 @@ class ExerciseHistoryControllerTest {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
-        mockMvc.perform(patch("/exercise-history/{exerciseHistoryId}",exerciseHistory.getId())
+        mockMvc.perform(patch("/exercise-history/{exerciseHistoryId}", exerciseHistory.getId())
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -169,7 +167,7 @@ class ExerciseHistoryControllerTest {
     @Transactional
     void 운동_기록_날짜_조회_API_성공() throws Exception {
 
-        Routine routine = RoutineFixture.createRoutine(member,"루틴이름");
+        Routine routine = RoutineFixture.createRoutine(member, "루틴이름");
         routineRepository.save(routine);
 
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
@@ -191,7 +189,7 @@ class ExerciseHistoryControllerTest {
     @Transactional
     void 운동_기록_아이디_삭제_API_성공() throws Exception {
 
-        Routine routine = RoutineFixture.createRoutine(member,"루틴이름");
+        Routine routine = RoutineFixture.createRoutine(member, "루틴이름");
         routineRepository.save(routine);
 
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
@@ -200,7 +198,7 @@ class ExerciseHistoryControllerTest {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
-        mockMvc.perform(delete("/exercise-history/{exerciseHistoryId}",exerciseHistory.getId())
+        mockMvc.perform(delete("/exercise-history/{exerciseHistoryId}", exerciseHistory.getId())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isNoContent())
                 .andDo(MockMvcResultHandlers.print());
@@ -211,7 +209,7 @@ class ExerciseHistoryControllerTest {
     @Transactional
     void 운동_기록_주간_기록_API_성공() throws Exception {
 
-        Routine routine = RoutineFixture.createRoutine(member,"루틴이름");
+        Routine routine = RoutineFixture.createRoutine(member, "루틴이름");
         routineRepository.save(routine);
 
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
@@ -220,7 +218,7 @@ class ExerciseHistoryControllerTest {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
-        mockMvc.perform(get("/exercise-history/weekstatus",exerciseHistory.getId())
+        mockMvc.perform(get("/exercise-history/weekstatus", exerciseHistory.getId())
                         .session(session)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -232,7 +230,7 @@ class ExerciseHistoryControllerTest {
     @Transactional
     void 운동_상태_완료_API_성공() throws Exception {
 
-        Routine routine = RoutineFixture.createRoutine(member,"루틴이름");
+        Routine routine = RoutineFixture.createRoutine(member, "루틴이름");
         routineRepository.save(routine);
 
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
@@ -241,7 +239,7 @@ class ExerciseHistoryControllerTest {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("member", member);
 
-        mockMvc.perform(patch("/exercise-history/{exerciseHistoryId}/end",exerciseHistory.getId())
+        mockMvc.perform(patch("/exercise-history/{exerciseHistoryId}/end", exerciseHistory.getId())
                         .param("endTime", LocalTime.now().toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -252,7 +250,7 @@ class ExerciseHistoryControllerTest {
     @Test
     @Transactional
     void 세트_체크_API_성공() throws Exception {
-        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member,"루틴이름"));
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member, "루틴이름"));
         Exercise exercise = exerciseRepository.save(ExerciseFixture.createExercise());
 
         ExerciseHistory exerciseHistory = exerciseHistoryRepository.save(ExerciseHistoryFixture.createExerciseHistory(member, routine));
@@ -267,13 +265,13 @@ class ExerciseHistoryControllerTest {
     @Test
     @Transactional
     void 주간_운동_부위별_세트수_조회_API_성공() throws Exception {
-        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member,"루틴이름"));
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member, "루틴이름"));
         Exercise exercise = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST));
 
         LocalDate performedDate = LocalDate.now().minusDays(2);
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine, performedDate, ExerciseHistoryStatus.COMPLETED);
         PerformedExercise performedExercise = ExerciseHistoryFixture.createPerformedExercise(exerciseHistory, exercise);
-        PerformedExerciseSet performedExerciseSet = ExerciseHistoryFixture.createPerformedExerciseSet(performedExercise, 2f,2, true);
+        PerformedExerciseSet performedExerciseSet = ExerciseHistoryFixture.createPerformedExerciseSet(performedExercise, 2f, 2, true);
         performedExercise.addPerformedExerciseSet(performedExerciseSet);
         exerciseHistory.addPerformedExercise(performedExercise);
         exerciseHistoryRepository.save(exerciseHistory);
@@ -290,13 +288,13 @@ class ExerciseHistoryControllerTest {
     @Test
     @Transactional
     void 이번달과_지난달_운동량_비교_API_성공() throws Exception {
-        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member,"루틴이름"));
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member, "루틴이름"));
         Exercise exercise = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.BACK));
 
         LocalDate lastMonthDate = LocalDate.now().minusMonths(1).withDayOfMonth(10);
         ExerciseHistory lastMonthHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine, lastMonthDate, ExerciseHistoryStatus.COMPLETED);
         PerformedExercise lastMonthExercise = ExerciseHistoryFixture.createPerformedExercise(lastMonthHistory, exercise);
-        PerformedExerciseSet performedExerciseSet1 = ExerciseHistoryFixture.createPerformedExerciseSet(lastMonthExercise, 3f,3,true);
+        PerformedExerciseSet performedExerciseSet1 = ExerciseHistoryFixture.createPerformedExerciseSet(lastMonthExercise, 3f, 3, true);
         lastMonthHistory.addPerformedExercise(lastMonthExercise);
         lastMonthExercise.addPerformedExerciseSet(performedExerciseSet1);
         exerciseHistoryRepository.save(lastMonthHistory);
@@ -304,7 +302,7 @@ class ExerciseHistoryControllerTest {
         LocalDate thisMonthDate = LocalDate.now().withDayOfMonth(10);
         ExerciseHistory thisMonthHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine, thisMonthDate, ExerciseHistoryStatus.COMPLETED);
         PerformedExercise thisMonthExercise = ExerciseHistoryFixture.createPerformedExercise(thisMonthHistory, exercise);
-        PerformedExerciseSet performedExerciseSet2 = ExerciseHistoryFixture.createPerformedExerciseSet(thisMonthExercise, 4f,4,true);
+        PerformedExerciseSet performedExerciseSet2 = ExerciseHistoryFixture.createPerformedExerciseSet(thisMonthExercise, 4f, 4, true);
         thisMonthHistory.addPerformedExercise(thisMonthExercise);
         thisMonthExercise.addPerformedExerciseSet(performedExerciseSet2);
         exerciseHistoryRepository.save(thisMonthHistory);
@@ -321,7 +319,7 @@ class ExerciseHistoryControllerTest {
     @Test
     @Transactional
     void 운동_세트_체크_API_성공() throws Exception {
-        Routine routine = RoutineFixture.createRoutine(member,"루틴이름");
+        Routine routine = RoutineFixture.createRoutine(member, "루틴이름");
         routineRepository.save(routine);
 
         Exercise exercise = ExerciseFixture.createExercise();
@@ -349,7 +347,7 @@ class ExerciseHistoryControllerTest {
     @Test
     @Transactional
     void 부위별_상위_5_운동_조회_API_성공() throws Exception {
-        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member,"루틴이름"));
+        Routine routine = routineRepository.save(RoutineFixture.createRoutine(member, "루틴이름"));
         Exercise exercise1 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST));
         Exercise exercise2 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.BACK));
         Exercise exercise3 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.LEGS));

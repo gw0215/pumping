@@ -1,5 +1,8 @@
 package com.pumping.domain.exercise.model;
 
+import lombok.Getter;
+
+@Getter
 public enum ExercisePart {
     CHEST("가슴"),
     BACK("등"),
@@ -15,12 +18,4 @@ public enum ExercisePart {
         this.koreanName = koreanName;
     }
 
-    public String getKoreanName() {
-        return koreanName;
-    }
-
-    @Override
-    public String toString() {
-        return koreanName;
-    }
 }

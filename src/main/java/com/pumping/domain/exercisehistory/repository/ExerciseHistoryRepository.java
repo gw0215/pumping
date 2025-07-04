@@ -64,25 +64,25 @@ public interface ExerciseHistoryRepository extends JpaRepository<ExerciseHistory
     List<MonthlyPartVolumeDto> findMonthlyVolumeByPart(@Param("memberId") Long memberId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
     @Query(value = """
-            SELECT part, exercise_id, exercise_name, cnt
-            FROM (
-               SELECT e.exercise_part   AS part,
-                      e.id              AS exercise_id,
-                      e.name            AS exercise_name,
-                      COUNT(pe.id)      AS cnt,
-                      ROW_NUMBER() OVER (PARTITION BY e.exercise_part
-                                         ORDER BY COUNT(pe.id) DESC) AS rn
-               FROM performed_exercise pe
-               JOIN exercise e ON pe.exercise_id = e.id
-               JOIN exercise_history eh ON pe.exercise_history_id = eh.id
-               WHERE eh.performed_date BETWEEN :startDate AND :endDate
-                 AND eh.exercise_history_status = 'COMPLETED'
-               GROUP BY e.exercise_part, e.id, e.name
-            ) sub
-            WHERE rn <= 5
-            ORDER BY part, cnt DESC
-            """, nativeQuery = true)
-    List<TopExerciseDto> findTop5ByPart(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    SELECT e.exercise_part AS part,
+           e.id            AS exercise_id,
+           e.name          AS exercise_name,
+           COUNT(pe.id)    AS cnt
+    FROM performed_exercise pe
+    JOIN exercise e ON pe.exercise_id = e.id
+    JOIN exercise_history eh ON pe.exercise_history_id = eh.id
+    WHERE eh.performed_date BETWEEN :startDate AND :endDate
+      AND eh.exercise_history_status = 'COMPLETED'
+      AND e.exercise_part = :part
+    GROUP BY e.exercise_part, e.id, e.name
+    ORDER BY cnt DESC
+    LIMIT 5
+    """, nativeQuery = true)
+    List<TopExerciseDto> findTop5ByPart(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("part") String part
+    );
 
     List<ExerciseHistory> findByMemberAndPerformedDateBetweenAndExerciseHistoryStatus(
             Member member,

@@ -24,6 +24,8 @@ import com.pumping.domain.routine.repository.RoutineRepository;
 import com.pumping.domain.routineexercise.model.RoutineExercise;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExerciseHistoryService {
@@ -320,19 +323,18 @@ public class ExerciseHistoryService {
         return result;
     }
 
+    @Cacheable(value = "topExercises", key = "#startDate + '-' + #endDate")
     @Transactional(readOnly = true)
     public TopExerciseResponse getTop5ExercisesByPart(LocalDate startDate, LocalDate endDate) {
 
-        List<TopExerciseDto> raw = exerciseHistoryRepository.findTop5ByPart(startDate, endDate);
-
         return new TopExerciseResponse(
-                raw.stream().filter(d -> d.getPart() == ExercisePart.CHEST).toList(),
-                raw.stream().filter(d -> d.getPart() == ExercisePart.BACK).toList(),
-                raw.stream().filter(d -> d.getPart() == ExercisePart.SHOULDERS).toList(),
-                raw.stream().filter(d -> d.getPart() == ExercisePart.ARMS).toList(),
-                raw.stream().filter(d -> d.getPart() == ExercisePart.CORE).toList(),
-                raw.stream().filter(d -> d.getPart() == ExercisePart.LEGS).toList(),
-                raw.stream().filter(d -> d.getPart() == ExercisePart.HIP).toList()
+                exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.CHEST.name()),
+                exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.BACK.name()),
+                exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.SHOULDERS.name()),
+                exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.ARMS.name()),
+                exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.CORE.name()),
+                exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.LEGS.name()),
+                exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.HIP.name())
         );
     }
 

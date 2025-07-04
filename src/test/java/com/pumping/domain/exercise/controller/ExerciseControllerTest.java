@@ -71,7 +71,7 @@ class ExerciseControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].part").value(ExercisePart.CHEST.getKoreanName()))
+                .andExpect(jsonPath("$[0].part").value(ExercisePart.CHEST.name()))
                 .andExpect(jsonPath("$[0].id").exists())
                 .andExpect(jsonPath("$[0].name").isNotEmpty())
                 .andExpect(jsonPath("$[0].explain").isNotEmpty())

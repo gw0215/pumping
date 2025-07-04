@@ -402,38 +402,38 @@ class ExerciseHistoryServiceTest {
 
     @Test
     void 부위별_운동상위5개를_정상적으로_그룹핑하여_리턴한다() {
-
         LocalDate startDate = LocalDate.of(2024, 6, 1);
         LocalDate endDate = LocalDate.of(2024, 6, 21);
 
         TopExerciseDto chest1 = mock(TopExerciseDto.class);
-        when(chest1.getPart()).thenReturn(ExercisePart.CHEST);
         when(chest1.getExerciseName()).thenReturn("벤치프레스");
 
-        TopExerciseDto back1 = mock(TopExerciseDto.class);
-        when(back1.getPart()).thenReturn(ExercisePart.BACK);
-        when(back1.getExerciseName()).thenReturn("랫풀다운");
+        TopExerciseDto chest2 = mock(TopExerciseDto.class);
+        when(chest2.getExerciseName()).thenReturn("chest2");
 
-        TopExerciseDto arms1 = mock(TopExerciseDto.class);
-        when(arms1.getPart()).thenReturn(ExercisePart.ARMS);
-        when(arms1.getExerciseName()).thenReturn("바벨컬");
+        TopExerciseDto chest3 = mock(TopExerciseDto.class);
+        when(chest3.getExerciseName()).thenReturn("chest3");
 
-        List<TopExerciseDto> rawData = List.of(chest1, back1, arms1);
+        List<TopExerciseDto> chestList = List.of(chest1, chest2, chest3);
 
-        when(exerciseHistoryRepository.findTop5ByPart(startDate, endDate)).thenReturn(rawData);
+        when(exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.CHEST.name())).thenReturn(chestList);
+        when(exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.BACK.name())).thenReturn(List.of());
+        when(exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.SHOULDERS.name())).thenReturn(List.of());
+        when(exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.ARMS.name())).thenReturn(List.of());
+        when(exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.CORE.name())).thenReturn(List.of());
+        when(exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.LEGS.name())).thenReturn(List.of());
+        when(exerciseHistoryRepository.findTop5ByPart(startDate, endDate, ExercisePart.HIP.name())).thenReturn(List.of());
 
         TopExerciseResponse response = exerciseHistoryService.getTop5ExercisesByPart(startDate, endDate);
 
-        assertThat(response.chests()).hasSize(1);
+        assertThat(response.chests()).hasSize(3);
         assertThat(response.chests().get(0).getExerciseName()).isEqualTo("벤치프레스");
+        assertThat(response.chests().get(1).getExerciseName()).isEqualTo("chest2");
+        assertThat(response.chests().get(2).getExerciseName()).isEqualTo("chest3");
 
-        assertThat(response.backs()).hasSize(1);
-        assertThat(response.backs().get(0).getExerciseName()).isEqualTo("랫풀다운");
-
-        assertThat(response.arms()).hasSize(1);
-        assertThat(response.arms().get(0).getExerciseName()).isEqualTo("바벨컬");
-
+        assertThat(response.backs()).isEmpty();
         assertThat(response.shoulders()).isEmpty();
+        assertThat(response.arms()).isEmpty();
         assertThat(response.cores()).isEmpty();
         assertThat(response.legs()).isEmpty();
         assertThat(response.hips()).isEmpty();

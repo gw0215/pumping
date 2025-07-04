@@ -37,7 +37,7 @@ class ExerciseServiceTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getName()).isEqualTo("푸쉬업");
-        assertThat(result.get(0).getPart()).isEqualTo(ExercisePart.CHEST.getKoreanName());
+        assertThat(result.get(0).getPart()).isEqualTo(ExercisePart.CHEST.name());
     }
 
     @Test

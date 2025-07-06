@@ -11,6 +11,9 @@ import java.util.List;
 
 @Entity
 @Getter
+@Table(indexes = {
+        @Index(name = "idx_pe_history_exercise", columnList = "exercise_history_id, exercise_id")
+})
 @NoArgsConstructor
 public class PerformedExercise {
 

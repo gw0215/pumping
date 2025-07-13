@@ -39,4 +39,5 @@ jobs:
             pkill -f 'pumping-.*\.jar' || true
             nohup java -jar /home/ubuntu/app/pumping-*.jar \
               --spring.config.location=file:/home/ubuntu/app/config/ \
+              --spring.profiles.active=prod \
               > /home/ubuntu/app/logs/pumping.log 2>&1 &

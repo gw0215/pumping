@@ -9,9 +9,9 @@ import org.springframework.core.io.ClassPathResource;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 
-//@Configuration
-//public class FirebaseConfig {
-//
+@Configuration
+public class FirebaseConfig {
+
 //    @PostConstruct
 //    public void initFirebase() {
 //        try {
@@ -30,4 +30,4 @@ import java.io.IOException;
 //
 //
 //    }
-//}
+}

@@ -9,25 +9,25 @@ import org.springframework.core.io.ClassPathResource;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 
-@Configuration
-public class FirebaseConfig {
-
-    @PostConstruct
-    public void initFirebase() {
-        try {
-            ClassPathResource resource = new ClassPathResource("firebase-admin.json");
-
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(resource.getInputStream()))
-                    .build();
-
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-
-    }
-}
+//@Configuration
+//public class FirebaseConfig {
+//
+//    @PostConstruct
+//    public void initFirebase() {
+//        try {
+//            ClassPathResource resource = new ClassPathResource("firebase-admin.json");
+//
+//            FirebaseOptions options = FirebaseOptions.builder()
+//                    .setCredentials(GoogleCredentials.fromStream(resource.getInputStream()))
+//                    .build();
+//
+//            if (FirebaseApp.getApps().isEmpty()) {
+//                FirebaseApp.initializeApp(options);
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//
+//    }
+//}

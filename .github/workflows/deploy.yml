@@ -8,6 +8,22 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    services:
+      mariadb:
+        image: mariadb:10.7
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: test_pumping
+          MARIADB_USER: testuser
+          MARIADB_PASSWORD: testpass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -utestuser -ptestpass"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
@@ -20,9 +36,19 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-        
+
+      - name: Set environment variables (testuser/testpass)
+        run: |
+          echo "DB_USERNAME=testuser" >> $GITHUB_ENV
+          echo "DB_PASSWORD=testpass" >> $GITHUB_ENV
+          echo "FILE_UPLOAD_DIR=/tmp/uploads" >> $GITHUB_ENV
+
       - name: Build with Gradle
         run: ./gradlew build
+        env:
+          DB_USERNAME: testuser
+          DB_PASSWORD: testpass
+          FILE_UPLOAD_DIR: /tmp/uploads
 
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.4

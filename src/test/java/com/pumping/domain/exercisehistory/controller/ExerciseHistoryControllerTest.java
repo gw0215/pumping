@@ -23,6 +23,7 @@ import com.pumping.domain.performedexercise.repository.PerformedExerciseSetRepos
 import com.pumping.domain.routine.fixture.RoutineFixture;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
+import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -76,6 +77,9 @@ class ExerciseHistoryControllerTest {
 
     @MockitoBean
     JavaMailSender javaMailSender;
+
+    @MockitoBean
+    FirebaseConfig firebaseConfig;
 
     Member member;
 

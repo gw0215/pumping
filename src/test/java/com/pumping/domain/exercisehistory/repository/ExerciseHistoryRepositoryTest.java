@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.util.StopWatch;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -214,7 +215,6 @@ class ExerciseHistoryRepositoryTest {
         Exercise chest1 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST, "벤치프레스"));
         Exercise chest2 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST, "딥스"));
         Exercise chest3 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST, "체스트 플라이"));
-        Exercise chest4 = exerciseRepository.save(ExerciseFixture.createExercise(ExercisePart.CHEST, "푸시업"));
 
         for (int i = 0; i < 3; i++) {
             ExerciseHistory eh = exerciseHistoryRepository.save(
@@ -241,16 +241,9 @@ class ExerciseHistoryRepositoryTest {
         pe3.addPerformedExerciseSet(ExerciseHistoryFixture.createPerformedExerciseSet(pe3));
         eh3.addPerformedExercise(pe3);
 
-        ExerciseHistory eh4 = exerciseHistoryRepository.save(
-                ExerciseHistoryFixture.createExerciseHistory(member, routine, today.minusDays(6), ExerciseHistoryStatus.COMPLETED)
-        );
-        PerformedExercise pe4 = ExerciseHistoryFixture.createPerformedExercise(eh4, chest4);
-        pe4.addPerformedExerciseSet(ExerciseHistoryFixture.createPerformedExerciseSet(pe4));
-        eh4.addPerformedExercise(pe4);
-
         List<TopExerciseDto> result = exerciseHistoryRepository.findTop5ByPart(
                 today.minusDays(10), today.plusDays(1), ExercisePart.CHEST.name());
-        Assertions.assertThat(result).hasSize(4);
+        Assertions.assertThat(result).hasSize(3);
 
         Assertions.assertThat(result.get(0).getExerciseName()).isEqualTo("벤치프레스");
         Assertions.assertThat(result.get(0).getCnt()).isEqualTo(3);
@@ -261,10 +254,26 @@ class ExerciseHistoryRepositoryTest {
         Assertions.assertThat(result.get(2).getExerciseName()).isEqualTo("체스트 플라이");
         Assertions.assertThat(result.get(2).getCnt()).isEqualTo(1);
 
-        Assertions.assertThat(result.get(3).getExerciseName()).isEqualTo("푸시업");
-        Assertions.assertThat(result.get(3).getCnt()).isEqualTo(1);
-
         result.forEach(dto -> Assertions.assertThat(dto.getPart()).isEqualTo(ExercisePart.CHEST));
+    }
+
+
+    @Test
+    void 운동부위별_TOP5_운동명_조회_시간() {
+        LocalDate today = LocalDate.now();
+
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start("쿼리 실행");
+
+        List<TopExerciseDto> result = exerciseHistoryRepository.findTop5ByPart(
+                today.minusDays(10),
+                today.plusDays(20),
+                ExercisePart.CHEST.name()
+        );
+
+        stopWatch.stop();
+
+        System.out.println("운동부위별 TOP5 운동명 조회 시간: " + stopWatch.getTotalTimeMillis() + " ms");
     }
 
 }

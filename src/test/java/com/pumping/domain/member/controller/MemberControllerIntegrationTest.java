@@ -8,6 +8,7 @@ import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
 import com.pumping.domain.member.service.MemberService;
+import com.pumping.global.config.FirebaseConfig;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -47,6 +48,9 @@ class MemberControllerIntegrationTest {
 
     @MockitoBean
     JavaMailSender javaMailSender;
+
+    @MockitoBean
+    FirebaseConfig firebaseConfig;
 
     @Test
     @Transactional

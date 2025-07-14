@@ -5,6 +5,7 @@ import com.pumping.domain.emailverification.fixture.EmailVerificationFixture;
 import com.pumping.domain.emailverification.model.EmailVerification;
 import com.pumping.domain.emailverification.repository.EmailVerificationRepository;
 import com.pumping.domain.member.dto.EmailCodeCheckRequest;
+import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,9 @@ class EmailVerificationControllerIntegrationTest {
 
     @MockitoBean
     JavaMailSender javaMailSender;
+
+    @MockitoBean
+    FirebaseConfig firebaseConfig;
 
     @Test
     @Transactional

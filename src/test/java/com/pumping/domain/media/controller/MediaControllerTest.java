@@ -10,6 +10,7 @@ import com.pumping.domain.media.repository.MediaRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
+import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -52,6 +53,9 @@ class MediaControllerTest {
 
     @Autowired
     MediaRepository mediaRepository;
+
+    @MockitoBean
+    FirebaseConfig firebaseConfig;
 
     Member member;
 

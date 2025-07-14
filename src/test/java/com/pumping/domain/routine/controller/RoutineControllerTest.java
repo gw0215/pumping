@@ -16,6 +16,7 @@ import com.pumping.domain.routineexercise.dto.ExerciseSetRequest;
 import com.pumping.domain.routineexercise.fixture.ExerciseSetFixture;
 import com.pumping.domain.routineexercise.fixture.RoutineExerciseFixture;
 import com.pumping.domain.routineexercise.model.RoutineExercise;
+import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -57,6 +58,9 @@ class RoutineControllerTest {
 
     @MockitoBean
     JavaMailSender javaMailSender;
+
+    @MockitoBean
+    FirebaseConfig firebaseConfig;
 
     Member member;
 

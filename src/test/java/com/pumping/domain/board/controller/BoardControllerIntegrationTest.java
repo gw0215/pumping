@@ -10,6 +10,7 @@ import com.pumping.domain.media.model.Media;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
+import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -52,6 +53,9 @@ class BoardControllerIntegrationTest {
 
     @Autowired
     BoardRepository boardRepository;
+
+    @MockitoBean
+    FirebaseConfig firebaseConfig;
 
     Member member;
 

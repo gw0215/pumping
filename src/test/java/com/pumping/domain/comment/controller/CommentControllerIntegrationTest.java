@@ -11,6 +11,7 @@ import com.pumping.domain.comment.repository.CommentRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
+import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -51,6 +52,9 @@ class CommentControllerIntegrationTest {
 
     @MockitoBean
     JavaMailSender javaMailSender;
+
+    @MockitoBean
+    FirebaseConfig firebaseConfig;
 
     @Autowired
     BoardRepository boardRepository;

@@ -1,7 +1,12 @@
 package com.pumping.domain.exercisehistory.model;
 
+import com.pumping.domain.exercise.model.Exercise;
+import com.pumping.domain.exercise.repository.ExerciseRepository;
 import com.pumping.domain.member.model.Member;
+import com.pumping.domain.performedexercise.dto.PerformedExerciseRequest;
+import com.pumping.domain.performedexercise.dto.PerformedExerciseSetRequest;
 import com.pumping.domain.performedexercise.model.PerformedExercise;
+import com.pumping.domain.performedexercise.model.PerformedExerciseSet;
 import com.pumping.domain.routine.model.Routine;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,6 +16,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -60,8 +67,43 @@ public class ExerciseHistory {
         performedExercises.add(performedExercise);
     }
 
-    public void clearPerformedExerciseSet() {
-        performedExercises.clear();
+
+    public void deletePerformedSets(List<Long> setIdsToDelete) {
+        for (PerformedExercise pe : performedExercises) {
+            pe.deleteSetsByIds(setIdsToDelete);
+        }
     }
+
+    public void addPerformedSets(List<PerformedExerciseSetRequest> addRequests) {
+        Map<Long, PerformedExercise> map = performedExercises.stream()
+                .collect(Collectors.toMap(PerformedExercise::getId, pe -> pe));
+
+        for (PerformedExerciseSetRequest req : addRequests) {
+            PerformedExercise pe = map.get(req.getPerformedExerciseId());
+            if (pe != null) {
+                pe.addPerformedSet(new PerformedExerciseSet(pe, req.getWeight(), req.getRepetition(), req.getSetCount(), req.getCompleted()));
+            }
+        }
+    }
+
+    public void updatePerformedSets(List<PerformedExerciseSetRequest> updateRequests) {
+        for (PerformedExercise pe : performedExercises) {
+            pe.updateSets(updateRequests);
+        }
+    }
+
+    public void addNewExercises(List<PerformedExerciseRequest> requests, ExerciseRepository exerciseRepository) {
+        for (PerformedExerciseRequest req : requests) {
+            Exercise exercise = exerciseRepository.findById(req.getExerciseId())
+                    .orElseThrow(() -> new EntityNotFoundException("운동 없음"));
+
+            PerformedExercise pe = new PerformedExercise(this, exercise, req.getExerciseOrder());
+            for (PerformedExerciseSetRequest setReq : req.getPerformedExerciseSetRequests()) {
+                pe.addPerformedSet(new PerformedExerciseSet(pe, setReq.getWeight(), setReq.getRepetition(), setReq.getSetCount(), setReq.getCompleted()));
+            }
+            this.addPerformedExercise(pe);
+        }
+    }
+
 
 }

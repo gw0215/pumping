@@ -15,16 +15,9 @@ public class WeeklyReportDto {
     private final String mostFrequentExercise;
     private final List<ExerciseSummary> exerciseSummaries;
 
-    public WeeklyReportDto(
-            Long memberId,
-            Long totalWorkoutDays,
-            int totalSetsSum,
-            int totalRepsSum,
-            double totalWeightSum,
-            int averageWorkoutDurationMinutes,
-            String mostFrequentExercise,
-            List<ExerciseSummary> exerciseSummaries
-    ) {
+    public WeeklyReportDto(Long memberId, Long totalWorkoutDays, int totalSetsSum, int totalRepsSum,
+                           double totalWeightSum, int averageWorkoutDurationMinutes, String mostFrequentExercise,
+                           List<ExerciseSummary> exerciseSummaries) {
         this.memberId = memberId;
         this.totalWorkoutDays = totalWorkoutDays;
         this.totalSetsSum = totalSetsSum;
@@ -47,6 +40,23 @@ public class WeeklyReportDto {
             this.totalSets = totalSets;
             this.totalReps = totalReps;
             this.totalWeight = totalWeight;
+        }
+    }
+
+    @Getter
+    public static class SummaryData {
+        private final int totalSets;
+        private final int totalReps;
+        private final double totalWeight;
+        private final int totalMinutes;
+        private final List<ExerciseSummary> exerciseSummaries;
+
+        public SummaryData(int sets, int reps, double weight, int minutes, List<ExerciseSummary> summaries) {
+            this.totalSets = sets;
+            this.totalReps = reps;
+            this.totalWeight = weight;
+            this.totalMinutes = minutes;
+            this.exerciseSummaries = summaries;
         }
     }
 }

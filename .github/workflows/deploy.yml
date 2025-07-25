@@ -52,3 +52,13 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "build/libs/pumping-*.jar"
           target: "/home/ubuntu/app/"
+
+      - name: Run deploy script
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            chmod +x /home/ubuntu/deploy.sh
+            /home/ubuntu/deploy.sh

@@ -4,6 +4,7 @@ import com.pumping.domain.inbody.dto.InBodyRequest;
 import com.pumping.domain.inbody.dto.InBodyResponse;
 import com.pumping.domain.inbody.service.InBodyService;
 import com.pumping.domain.member.model.Member;
+import com.pumping.global.common.annotation.AuthMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,12 +25,12 @@ public class InBodyController {
     @ResponseBody
     @PostMapping(value = "/inbody")
     @ResponseStatus(HttpStatus.CREATED)
-    public void save(@SessionAttribute("member") Member member, @Valid @RequestBody InBodyRequest inBodyRequest) {
+    public void save(@AuthMember Member member, @Valid @RequestBody InBodyRequest inBodyRequest) {
         inBodyService.save(member, inBodyRequest.getWeight(), inBodyRequest.getSmm(), inBodyRequest.getBfm(), inBodyRequest.getDate());
     }
 
     @GetMapping("/inbody/recent")
-    public ResponseEntity<InBodyResponse> findRecentInBody(@SessionAttribute("member") Member member) {
+    public ResponseEntity<InBodyResponse> findRecentInBody(@AuthMember Member member) {
         InBodyResponse recentInBody = inBodyService.findRecentInBody(member);
         if (recentInBody == null) {
             return ResponseEntity.noContent().build();
@@ -40,7 +41,7 @@ public class InBodyController {
 
     @GetMapping("/inbody")
     public ResponseEntity<List<InBodyResponse>> findByDate(
-            @SessionAttribute("member") Member member,
+            @AuthMember Member member,
             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         List<InBodyResponse> inBodyResponses = inBodyService.findByDate(member, from, to);

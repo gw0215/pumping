@@ -8,6 +8,7 @@ import com.pumping.domain.inbody.repository.InBodyRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
+import com.pumping.global.common.util.JwtUtil;
 import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -54,12 +55,18 @@ class InBodyControllerIntegrationTest {
     @MockitoBean
     FirebaseConfig firebaseConfig;
 
+    @Autowired
+    JwtUtil jwtUtil;
+
     Member member;
+
+    String token;
 
     @BeforeEach
     void setUp() {
         member = MemberFixture.createMember();
         memberRepository.save(member);
+        token = jwtUtil.generateToken(member);
     }
     @Test
     @Transactional
@@ -67,11 +74,8 @@ class InBodyControllerIntegrationTest {
         InBodyRequest inBodyRequest = InBodyFixture.createInBodyRequest();
         String json = objectMapper.writeValueAsString(inBodyRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(post("/inbody")
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -85,11 +89,8 @@ class InBodyControllerIntegrationTest {
         InBodyRequest invalidRequest = new InBodyRequest(null, 20.0f, 15.0f, LocalDate.now());
         String json = objectMapper.writeValueAsString(invalidRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(post("/inbody")
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -100,14 +101,12 @@ class InBodyControllerIntegrationTest {
     @Test
     @Transactional
     void findRecentInBody_인바디가_존재할_경우_200_응답과_데이터를_반환한다() throws Exception {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         InBody inbody = InBodyFixture.createInbody(member);
         inBodyRepository.save(inbody);
 
         mockMvc.perform(get("/inbody/recent")
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.weight").value(inbody.getWeight()))
@@ -118,11 +117,9 @@ class InBodyControllerIntegrationTest {
     @Test
     @Transactional
     void findRecentInBody_인바디가_존재하지_않을_경우_204_응답을_반환한다() throws Exception {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         mockMvc.perform(get("/inbody/recent")
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent())
                 .andDo(print());
@@ -131,14 +128,12 @@ class InBodyControllerIntegrationTest {
     @Test
     @Transactional
     void findInBodyByDate_지정된_날짜_범위에_해당하는_데이터가_있으면_200_응답을_반환한다() throws Exception {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         InBody inBody = InBodyFixture.createInbody(member);
         inBodyRepository.save(inBody);
 
         mockMvc.perform(get("/inbody")
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .param("from", LocalDate.now().minusDays(3L).toString())
                         .param("to", LocalDate.now().plusDays(3L).toString())
                         .contentType(MediaType.APPLICATION_JSON))

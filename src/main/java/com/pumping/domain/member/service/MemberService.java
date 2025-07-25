@@ -29,7 +29,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MemberService {
 
-
     @Value("${file.upload-dir}")
     private String uploadDir;
 

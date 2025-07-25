@@ -49,13 +49,10 @@ class CommentControllerTest extends AbstractControllerTest {
         CommentRequest commentRequest = CommentFixture.createCommentRequest();
         String json = objectMapper.writeValueAsString(commentRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(post("/boards/{boardId}/comments",1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isCreated());
     }
 
@@ -64,13 +61,10 @@ class CommentControllerTest extends AbstractControllerTest {
         CommentRequest request = new CommentRequest(" ");
         String json = objectMapper.writeValueAsString(request);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(post("/boards/{boardId}/comments", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("댓글 내용을 입력해주세요."));
     }
@@ -95,13 +89,10 @@ class CommentControllerTest extends AbstractControllerTest {
         CommentRequest request = new CommentRequest("수정된 댓글");
         String json = objectMapper.writeValueAsString(request);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(patch("/boards/{boardId}/comments/{commentId}", 1L, 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isNoContent());
     }
 
@@ -110,13 +101,10 @@ class CommentControllerTest extends AbstractControllerTest {
         CommentRequest invalidRequest = new CommentRequest("   ");
         String json = objectMapper.writeValueAsString(invalidRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(patch("/boards/{boardId}/comments/{commentId}", 1L, 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("댓글 내용을 입력해주세요."));
     }
@@ -127,16 +115,13 @@ class CommentControllerTest extends AbstractControllerTest {
         CommentRequest request = new CommentRequest("수정");
         String json = objectMapper.writeValueAsString(request);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         doThrow(new EntityNotFoundException("댓글을 찾을 수 없습니다."))
                 .when(commentService).update(eq(99L), anyString(), any(Member.class));
 
         mockMvc.perform(patch("/boards/{boardId}/comments/{commentId}", 1L, 99L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("댓글을 찾을 수 없습니다."));
     }
@@ -146,16 +131,13 @@ class CommentControllerTest extends AbstractControllerTest {
         CommentRequest request = new CommentRequest("수정");
         String json = objectMapper.writeValueAsString(request);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         doThrow(new NoPermissionException("해당 댓글을 수정할 권한이 없습니다."))
                 .when(commentService).update(eq(1L), anyString(), any(Member.class));
 
         mockMvc.perform(patch("/boards/{boardId}/comments/{commentId}", 1L, 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("해당 댓글을 수정할 권한이 없습니다."));
     }
@@ -172,28 +154,24 @@ class CommentControllerTest extends AbstractControllerTest {
 
     @Test
     void 존재하지_않는_댓글_삭제시_404_응답을_반환한다() throws Exception {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         doThrow(new EntityNotFoundException("댓글을 찾을 수 없습니다. 댓글 ID : " + 99L))
                 .when(commentService).delete(eq(1L), eq(99L), any(Member.class));
 
         mockMvc.perform(delete("/boards/{boardId}/comments/{commentId}", 1L, 99L)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("댓글을 찾을 수 없습니다. 댓글 ID : " + 99L));
     }
 
     @Test
     void 권한_없는_사용자가_댓글_삭제시_403_응답을_반환한다() throws Exception {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         doThrow(new NoPermissionException("해당 댓글을 수정할 권한이 없습니다."))
                 .when(commentService).delete(eq(1L), eq(1L), any(Member.class));
 
         mockMvc.perform(delete("/boards/{boardId}/comments/{commentId}", 1L, 1L)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("해당 댓글을 수정할 권한이 없습니다."));
     }

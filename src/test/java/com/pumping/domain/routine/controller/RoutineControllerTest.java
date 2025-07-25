@@ -16,6 +16,7 @@ import com.pumping.domain.routineexercise.dto.ExerciseSetRequest;
 import com.pumping.domain.routineexercise.fixture.ExerciseSetFixture;
 import com.pumping.domain.routineexercise.fixture.RoutineExerciseFixture;
 import com.pumping.domain.routineexercise.model.RoutineExercise;
+import com.pumping.global.common.util.JwtUtil;
 import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,12 +63,18 @@ class RoutineControllerTest {
     @MockitoBean
     FirebaseConfig firebaseConfig;
 
+    @Autowired
+    JwtUtil jwtUtil;
+
     Member member;
+
+    String token;
 
     @BeforeEach
     void setUp() {
         member = MemberFixture.createMember();
         memberRepository.save(member);
+        token = jwtUtil.generateToken(member);
     }
 
     @AfterEach
@@ -117,11 +124,8 @@ class RoutineControllerTest {
         routineRepository.save(routine);
         exerciseRepository.save(exercise);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(get("/routines")
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())

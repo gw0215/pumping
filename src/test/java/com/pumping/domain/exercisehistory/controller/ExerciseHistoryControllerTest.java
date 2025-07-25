@@ -23,6 +23,7 @@ import com.pumping.domain.performedexercise.repository.PerformedExerciseSetRepos
 import com.pumping.domain.routine.fixture.RoutineFixture;
 import com.pumping.domain.routine.model.Routine;
 import com.pumping.domain.routine.repository.RoutineRepository;
+import com.pumping.global.common.util.JwtUtil;
 import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -81,12 +82,18 @@ class ExerciseHistoryControllerTest {
     @MockitoBean
     FirebaseConfig firebaseConfig;
 
+    @Autowired
+    JwtUtil jwtUtil;
+
     Member member;
+
+    String token;
 
     @BeforeEach
     void setUp() {
         member = MemberFixture.createMember();
         memberRepository.save(member);
+        token = jwtUtil.generateToken(member);
     }
 
 
@@ -104,11 +111,8 @@ class ExerciseHistoryControllerTest {
 
         String json = objectMapper.writeValueAsString(exerciseHistoryRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(post("/exercise-history")
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -155,11 +159,8 @@ class ExerciseHistoryControllerTest {
 
         String json = objectMapper.writeValueAsString(exerciseHistoryUpdateRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(patch("/exercise-history/{exerciseHistoryId}", exerciseHistory.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -177,11 +178,8 @@ class ExerciseHistoryControllerTest {
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
         exerciseHistoryRepository.save(exerciseHistory);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(get("/exercise-history")
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .param("performedDate", exerciseHistory.getPerformedDate().toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -198,9 +196,6 @@ class ExerciseHistoryControllerTest {
 
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
         exerciseHistoryRepository.save(exerciseHistory);
-
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         mockMvc.perform(delete("/exercise-history/{exerciseHistoryId}", exerciseHistory.getId())
                         .accept(MediaType.APPLICATION_JSON))
@@ -219,11 +214,8 @@ class ExerciseHistoryControllerTest {
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
         exerciseHistoryRepository.save(exerciseHistory);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(get("/exercise-history/weekstatus", exerciseHistory.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
@@ -239,9 +231,6 @@ class ExerciseHistoryControllerTest {
 
         ExerciseHistory exerciseHistory = ExerciseHistoryFixture.createExerciseHistory(member, routine);
         exerciseHistoryRepository.save(exerciseHistory);
-
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         mockMvc.perform(patch("/exercise-history/{exerciseHistoryId}/end", exerciseHistory.getId())
                         .param("endTime", LocalTime.now().toString())
@@ -280,11 +269,8 @@ class ExerciseHistoryControllerTest {
         exerciseHistory.addPerformedExercise(performedExercise);
         exerciseHistoryRepository.save(exerciseHistory);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(get("/exercise-history/exercise-part-analyze")
-                        .session(session))
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
     }
@@ -311,11 +297,8 @@ class ExerciseHistoryControllerTest {
         thisMonthExercise.addPerformedExerciseSet(performedExerciseSet2);
         exerciseHistoryRepository.save(thisMonthHistory);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(get("/exercise-history/last-month-compare")
-                        .session(session))
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
     }
@@ -338,11 +321,8 @@ class ExerciseHistoryControllerTest {
 
         exerciseHistoryRepository.save(exerciseHistory);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(patch("/performed-exercise-set/{performedExerciseSetId}", performedExerciseSet.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print());
@@ -380,11 +360,8 @@ class ExerciseHistoryControllerTest {
         history3.addPerformedExercise(performedExercise3);
         exerciseHistoryRepository.save(history3);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(get("/exercise-history/top5")
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .param("startDate", startDate.toString())
                         .param("endDate", endDate.toString())
                         .contentType(MediaType.APPLICATION_JSON)

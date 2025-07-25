@@ -8,9 +8,10 @@ import com.pumping.domain.emailverification.controller.EmailVerificationControll
 import com.pumping.domain.emailverification.service.EmailVerificationService;
 import com.pumping.domain.inbody.controller.InBodyController;
 import com.pumping.domain.inbody.service.InBodyService;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
+import com.pumping.domain.member.repository.MemberRepository;
+import com.pumping.global.common.util.JwtUtil;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @WebMvcTest(controllers = {BoardController.class, CommentController.class, InBodyController.class, EmailVerificationController.class})
@@ -27,5 +28,12 @@ public class AbstractControllerTest {
 
     @MockitoBean
     protected EmailVerificationService emailVerificationService;
+
+    @MockitoBean
+    protected JwtUtil jwtUtil;
+
+    @MockitoBean
+    protected MemberRepository memberRepository;
+
 
 }

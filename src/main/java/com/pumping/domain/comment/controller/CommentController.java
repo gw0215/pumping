@@ -4,6 +4,7 @@ import com.pumping.domain.comment.dto.CommentRequest;
 import com.pumping.domain.comment.dto.CommentResponse;
 import com.pumping.domain.comment.service.CommentService;
 import com.pumping.domain.member.model.Member;
+import com.pumping.global.common.annotation.AuthMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,7 +26,7 @@ public class CommentController {
     @PostMapping("boards/{boardId}/comments")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> save(
-            @SessionAttribute("member") Member member,
+            @AuthMember Member member,
             @PathVariable("boardId") Long boardId,
             @Valid @RequestBody CommentRequest commentRequest
     ) {
@@ -46,7 +47,7 @@ public class CommentController {
     @PatchMapping("boards/{boardId}/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(
-            @SessionAttribute("member") Member member,
+            @AuthMember Member member,
             @PathVariable("commentId") Long commentId,
             @Valid @RequestBody CommentRequest commentRequest
     ) {
@@ -56,7 +57,7 @@ public class CommentController {
     @DeleteMapping("boards/{boardId}/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
-            @SessionAttribute("member") Member member,
+            @AuthMember Member member,
             @PathVariable("boardId") Long boardId,
             @PathVariable("commentId") Long commentId
     ) {

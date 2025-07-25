@@ -11,6 +11,7 @@ import com.pumping.domain.comment.repository.CommentRepository;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
+import com.pumping.global.common.util.JwtUtil;
 import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,12 +63,18 @@ class CommentControllerIntegrationTest {
     @Autowired
     CommentRepository commentRepository;
 
+    @Autowired
+    JwtUtil jwtUtil;
+
     Member member;
+
+    String token;
 
     @BeforeEach
     void setUp() {
         member = MemberFixture.createMember();
         memberRepository.save(member);
+        token = jwtUtil.generateToken(member);
     }
 
     @AfterEach
@@ -88,17 +95,14 @@ class CommentControllerIntegrationTest {
 
         String json = objectMapper.writeValueAsString(commentRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         MvcResult result = mockMvc.perform(post("/boards/{boardId}/comments", board.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
-                .andExpect(header().string("Location", startsWith("/boards/"+board.getId()+"/comments/")))
+                .andExpect(header().string("Location", startsWith("/boards/" + board.getId() + "/comments/")))
                 .andDo(print())
                 .andReturn();
 
@@ -117,11 +121,8 @@ class CommentControllerIntegrationTest {
         CommentRequest commentRequest = CommentFixture.createCommentRequest();
         String json = objectMapper.writeValueAsString(commentRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(post("/boards/{boardId}/comments", invalidBoardId)
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -137,11 +138,8 @@ class CommentControllerIntegrationTest {
         CommentRequest commentRequest = new CommentRequest("");
         String json = objectMapper.writeValueAsString(commentRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(post("/boards/{boardId}/comments", board.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -159,11 +157,8 @@ class CommentControllerIntegrationTest {
         CommentRequest commentRequest = new CommentRequest(overLimitContent);
         String json = objectMapper.writeValueAsString(commentRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(post("/boards/{boardId}/comments", board.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -184,11 +179,8 @@ class CommentControllerIntegrationTest {
         List<Comment> comments = CommentFixture.createComments(member, board, size);
         commentRepository.saveAll(comments);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(get("/boards/{boardId}/comments", board.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(size)))
@@ -212,11 +204,8 @@ class CommentControllerIntegrationTest {
         CommentRequest commentRequest = CommentFixture.createCommentRequest();
         String json = objectMapper.writeValueAsString(commentRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
-        mockMvc.perform(patch("/boards/{boardId}/comments/{commentId}",board.getId(), comment.getId())
-                        .session(session)
+        mockMvc.perform(patch("/boards/{boardId}/comments/{commentId}", board.getId(), comment.getId())
+                        .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -238,33 +227,14 @@ class CommentControllerIntegrationTest {
         Comment comment = CommentFixture.createComment(member, board);
         commentRepository.save(comment);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(delete("/boards/{boardId}/comments/{commentId}", board.getId(), comment.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent())
                 .andDo(print());
 
         Optional<Comment> deleted = commentRepository.findById(comment.getId());
         assertThat(deleted).isEmpty();
-    }
-
-    @Test
-    void 세션없이_댓글을_저장하려고_하면_에러를_반환한다() throws Exception {
-        Board board = BoardFixture.createBoard(member);
-        boardRepository.save(board);
-
-        CommentRequest commentRequest = CommentFixture.createCommentRequest();
-        String json = objectMapper.writeValueAsString(commentRequest);
-
-        mockMvc.perform(post("/boards/{boardId}/comments", board.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().is4xxClientError())
-                .andDo(print());
     }
 
 

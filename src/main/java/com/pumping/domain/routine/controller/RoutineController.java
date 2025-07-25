@@ -5,6 +5,7 @@ import com.pumping.domain.routine.dto.RoutineDetailResponse;
 import com.pumping.domain.routine.dto.RoutineExerciseRequests;
 import com.pumping.domain.routine.dto.RoutineResponse;
 import com.pumping.domain.routine.service.RoutineService;
+import com.pumping.global.common.annotation.AuthMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class RoutineController {
     @PostMapping("/routines")
     @ResponseStatus(HttpStatus.CREATED)
     public void create(
-            @SessionAttribute("member") Member member,
+            @AuthMember Member member,
             @RequestBody RoutineExerciseRequests routineExerciseRequests
     ) {
         routineService.create(member, routineExerciseRequests);
@@ -29,7 +30,7 @@ public class RoutineController {
     @GetMapping("/routines")
     @ResponseStatus(HttpStatus.OK)
     public List<RoutineResponse> findAll(
-            @SessionAttribute("member") Member member
+            @AuthMember Member member
     ) {
         return routineService.findAll(member.getId());
     }

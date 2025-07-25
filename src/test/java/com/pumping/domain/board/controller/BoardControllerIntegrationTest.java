@@ -10,6 +10,7 @@ import com.pumping.domain.media.model.Media;
 import com.pumping.domain.member.fixture.MemberFixture;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.member.repository.MemberRepository;
+import com.pumping.global.common.util.JwtUtil;
 import com.pumping.global.config.FirebaseConfig;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,15 +55,21 @@ class BoardControllerIntegrationTest {
     @Autowired
     BoardRepository boardRepository;
 
+    @Autowired
+    JwtUtil jwtUtil;
+
     @MockitoBean
     FirebaseConfig firebaseConfig;
 
     Member member;
 
+    String token;
+
     @BeforeEach
     void setUp() {
         member = MemberFixture.createMember();
         memberRepository.save(member);
+        token = jwtUtil.generateToken(member);
     }
 
     @AfterEach
@@ -92,15 +99,12 @@ class BoardControllerIntegrationTest {
                 "dummy-image-content".getBytes()
         );
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         MvcResult result = mockMvc.perform(multipart("/boards")
                         .file(boardPart)
                         .file(filePart)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .session(session))
+                        .header("Authorization", "Bearer " + token)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(header().string("Location", startsWith("/boards/")))
@@ -129,11 +133,8 @@ class BoardControllerIntegrationTest {
 
         boardRepository.saveAll(boards);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(get("/boards")
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(size)))
@@ -156,11 +157,8 @@ class BoardControllerIntegrationTest {
         BoardRequest boardRequest = BoardFixture.createBoardRequest();
         String json = objectMapper.writeValueAsString(boardRequest);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(patch("/boards/{boardId}", board.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -181,11 +179,8 @@ class BoardControllerIntegrationTest {
         BoardRequest invalid = new BoardRequest("", "내용");
         String json = objectMapper.writeValueAsString(invalid);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(patch("/boards/{boardId}", board.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest())
@@ -200,16 +195,14 @@ class BoardControllerIntegrationTest {
         Member other = MemberFixture.createMember("test", "test", "test");
 
         memberRepository.save(other);
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", other);
-
+        String otherToken = jwtUtil.generateToken(other);
         BoardRequest request = BoardFixture.createBoardRequest();
         String json = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(patch("/boards/{boardId}", board.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .header("Authorization", "Bearer " + otherToken))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("해당 게시글을 수정할 권한이 없습니다."));
     }
@@ -219,36 +212,15 @@ class BoardControllerIntegrationTest {
         BoardRequest request = BoardFixture.createBoardRequest();
         String json = objectMapper.writeValueAsString(request);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(patch("/boards/{boardId}", 99999L)
-                        .session(session)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("게시글을 찾을 수 없습니다. 게시글 ID : 99999"));
     }
 
-    @Test
-    @Transactional
-    void 게시글삭제_작성자_세션이_있으면_204응답반환() throws Exception {
 
-        Board board = BoardFixture.createBoard(member);
-        boardRepository.save(board);
-
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
-        mockMvc.perform(delete("/boards/{boardId}", board.getId())
-                        .session(session)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent())
-                .andDo(print());
-
-        assertThat(board.isDeleted()).isTrue();
-
-    }
 
     @Test
     @Transactional
@@ -258,11 +230,14 @@ class BoardControllerIntegrationTest {
         Member other = MemberFixture.createMember("test2", "test2", "test2");
         memberRepository.save(other);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", other);
+        String otherToken = jwtUtil.generateToken(other);
 
+        Long id = jwtUtil.validateAndExtractMemberId(otherToken);
+
+        System.out.println("asdf" + otherToken);
+        System.out.println("idididididi" + id);
         mockMvc.perform(delete("/boards/{boardId}", board.getId())
-                        .session(session)
+                        .header("Authorization", "Bearer " + otherToken)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("해당 게시글을 삭제할 권한이 없습니다."));

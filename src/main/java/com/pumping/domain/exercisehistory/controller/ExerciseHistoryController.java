@@ -3,6 +3,7 @@ package com.pumping.domain.exercisehistory.controller;
 import com.pumping.domain.exercisehistory.dto.*;
 import com.pumping.domain.member.model.Member;
 import com.pumping.domain.exercisehistory.service.ExerciseHistoryService;
+import com.pumping.global.common.annotation.AuthMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ public class ExerciseHistoryController {
     @ResponseBody
     @ResponseStatus(HttpStatus.CREATED)
     public void save(
-            @SessionAttribute("member") Member member,
+            @AuthMember Member member,
             @RequestBody ExerciseHistoryRequest exerciseHistoryRequest
     ) {
         exerciseHistoryService.save(member, exerciseHistoryRequest.getRoutineId(), exerciseHistoryRequest.getPerformedDate());
@@ -42,7 +43,7 @@ public class ExerciseHistoryController {
 
     @GetMapping("/exercise-history")
     public ResponseEntity<ExerciseHistoryResponse> findByMemberIdAndPerformedDate(
-            @SessionAttribute("member") Member member,
+            @AuthMember Member member,
             @RequestParam("performedDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate performedDate
     ) {
         return exerciseHistoryService.findByMemberIdAndPerformedDate(member.getId(), performedDate)
@@ -61,7 +62,7 @@ public class ExerciseHistoryController {
     @GetMapping("/exercise-history/weekstatus")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<ExerciseHistoryWeekStatusResponse> weekStatus(
-            @SessionAttribute("member") Member member
+            @AuthMember Member member
     ) {
         ExerciseHistoryWeekStatusResponse exerciseHistoryWeekStatusResponse = exerciseHistoryService.weekStatus(member);
         return ResponseEntity.ok(exerciseHistoryWeekStatusResponse);
@@ -84,7 +85,7 @@ public class ExerciseHistoryController {
 
     @GetMapping("/exercise-history/exercise-part-analyze")
     public ResponseEntity< List<ExercisePartSetCountDto>> getWeeklyExerciseSetCount(
-            @SessionAttribute("member") Member member
+            @AuthMember Member member
     ) {
         List<ExercisePartSetCountDto> weeklySetCountByExercisePart = exerciseHistoryService.getWeeklySetCountByExercisePart(member.getId());
         return ResponseEntity.ok(weeklySetCountByExercisePart);
@@ -92,7 +93,7 @@ public class ExerciseHistoryController {
 
     @GetMapping("/exercise-history/last-month-compare")
     public ResponseEntity<List<PartVolumeComparisonDto>> compareMonthlyVolume(
-            @SessionAttribute("member") Member member) {
+            @AuthMember Member member) {
         List<PartVolumeComparisonDto> result = exerciseHistoryService.compareThisMonthAndLastMonthVolume(member.getId());
         return ResponseEntity.ok(result);
     }

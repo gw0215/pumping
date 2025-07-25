@@ -49,13 +49,11 @@ class BoardControllerTest extends AbstractControllerTest {
         boardPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         mockMvc.perform(multipart("/boards")
                         .file(file)
                         .part(boardPart)
-                        .session(session)
+                        .requestAttr("member", member)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isCreated());
 
@@ -76,12 +74,10 @@ class BoardControllerTest extends AbstractControllerTest {
         boardPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         mockMvc.perform(multipart("/boards")
                         .part(boardPart)
-                        .session(session)
+                        .requestAttr("member", member)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isCreated());
 
@@ -103,14 +99,11 @@ class BoardControllerTest extends AbstractControllerTest {
         boardPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         mockMvc.perform(multipart("/boards")
                         .file(file)
                         .part(boardPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isBadRequest());
 
         verify(boardService, never()).save(any(), any(), any(), any());
@@ -126,14 +119,12 @@ class BoardControllerTest extends AbstractControllerTest {
         boardPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         mockMvc.perform(multipart("/boards")
                         .file(file)
                         .part(boardPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isBadRequest());
 
         verify(boardService, never()).save(any(), any(), any(), any());
@@ -143,8 +134,6 @@ class BoardControllerTest extends AbstractControllerTest {
     void 게시글_목록을_조회하면_200과_게시글_목록을_반환한다() throws Exception {
 
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         List<BoardResponse> boardList = List.of(
                 BoardFixture.createBoardResponse(1L),
@@ -158,7 +147,7 @@ class BoardControllerTest extends AbstractControllerTest {
         mockMvc.perform(get("/boards")
                         .param("page", "0")
                         .param("size", "10")
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content.length()").value(boardList.size()));
@@ -169,8 +158,6 @@ class BoardControllerTest extends AbstractControllerTest {
     @Test
     void 게시글을_정상적으로_수정하면_204를_반환한다() throws Exception {
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         BoardRequest request = BoardFixture.createBoardRequest("수정된 제목", "수정된 내용");
         String json = objectMapper.writeValueAsString(request);
@@ -178,7 +165,7 @@ class BoardControllerTest extends AbstractControllerTest {
         mockMvc.perform(patch("/boards/{boardId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isNoContent());
 
         verify(boardService).update(
@@ -192,8 +179,6 @@ class BoardControllerTest extends AbstractControllerTest {
     @Test
     void 게시글_수정시_존재하지_않는_id면_404를_반환한다() throws Exception {
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         BoardRequest request = BoardFixture.createBoardRequest("수정된 제목", "수정된 내용");
         String json = objectMapper.writeValueAsString(request);
@@ -204,7 +189,7 @@ class BoardControllerTest extends AbstractControllerTest {
         mockMvc.perform(patch("/boards/{boardId}", 999L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("게시글을 찾을 수 없습니다. 게시글 ID : 999"));
     }
@@ -213,8 +198,6 @@ class BoardControllerTest extends AbstractControllerTest {
     void 게시글_수정_요청에서_title이_비어있으면_400을_반환한다() throws Exception {
 
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         BoardRequest invalidRequest = new BoardRequest("", "내용입니다");
         String json = objectMapper.writeValueAsString(invalidRequest);
@@ -222,7 +205,7 @@ class BoardControllerTest extends AbstractControllerTest {
         mockMvc.perform(patch("/boards/{boardId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isBadRequest());
 
         verify(boardService, never()).update(any(), any(), any(), any());
@@ -231,8 +214,6 @@ class BoardControllerTest extends AbstractControllerTest {
     @Test
     void 게시글_수정_요청에서_content가_비어있으면_400을_반환한다() throws Exception {
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         BoardRequest invalidRequest = new BoardRequest("제목입니다", "");
         String json = objectMapper.writeValueAsString(invalidRequest);
@@ -240,7 +221,7 @@ class BoardControllerTest extends AbstractControllerTest {
         mockMvc.perform(patch("/boards/{boardId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isBadRequest());
 
         verify(boardService, never()).update(any(), any(), any(), any());
@@ -249,11 +230,9 @@ class BoardControllerTest extends AbstractControllerTest {
     @Test
     void 게시글을_작성자가_삭제하면_204를_반환한다() throws Exception {
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
 
         mockMvc.perform(delete("/boards/{boardId}", 1L)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isNoContent());
 
         verify(boardService).deleteById(1L, member);
@@ -262,25 +241,11 @@ class BoardControllerTest extends AbstractControllerTest {
     @Test
     void 게시글_삭제시_작성자가_아니면_403을_반환한다() throws Exception {
         Member member = MemberFixture.createMember();
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("member", member);
-
         doThrow(new NoPermissionException("해당 게시글을 삭제할 권한이 없습니다.")).when(boardService).deleteById(eq(1L), eq(member));
 
         mockMvc.perform(delete("/boards/{boardId}", 1L)
-                        .session(session))
+                        .requestAttr("member", member))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("해당 게시글을 삭제할 권한이 없습니다."));
-    }
-
-    @Test
-    void 게시글_세션없으면_400을_반환한다() throws Exception {
-        BoardRequest request = BoardFixture.createBoardRequest("제목", "내용");
-        String json = objectMapper.writeValueAsString(request);
-
-        mockMvc.perform(patch("/boards/{boardId}", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isBadRequest());
     }
 }
